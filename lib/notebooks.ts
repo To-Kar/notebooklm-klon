@@ -1,3 +1,4 @@
+import { NOTEBOOK_TITLE_MAX_LENGTH } from "@/lib/notebook-limits";
 import { createAdminClient } from "@/lib/supabase/server";
 
 /**
@@ -16,6 +17,20 @@ export type Notebook = {
 
 /** Spaltenliste fuer alle Notebook-Queries, damit die Auswahl zum Typ passt. */
 const NOTEBOOK_COLUMNS = "id, title, created_at";
+
+/**
+ * Anzeigeformat fuer created_at.
+ * Feste Zeitzone, damit das Datum nicht von der Server-Zeitzone abhaengt
+ * (Vercel-Functions laufen in UTC).
+ */
+const notebookDateFormatter = new Intl.DateTimeFormat("de-DE", {
+  dateStyle: "medium",
+  timeZone: "Europe/Berlin",
+});
+
+export function formatNotebookDate(createdAt: string): string {
+  return notebookDateFormatter.format(new Date(createdAt));
+}
 
 /** Alle Notebooks, neueste zuerst. */
 export async function listNotebooks(): Promise<Notebook[]> {
@@ -62,6 +77,12 @@ export async function createNotebook(title: string): Promise<Notebook> {
 
   if (trimmedTitle.length === 0) {
     throw new Error("Der Titel darf nicht leer sein.");
+  }
+
+  if (trimmedTitle.length > NOTEBOOK_TITLE_MAX_LENGTH) {
+    throw new Error(
+      `Der Titel darf hoechstens ${NOTEBOOK_TITLE_MAX_LENGTH} Zeichen lang sein.`,
+    );
   }
 
   const supabase = createAdminClient();
