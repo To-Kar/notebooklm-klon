@@ -70,7 +70,7 @@ returns table (
 )
 language sql
 stable
-as $$
+as $func$
   select
     c.id,
     c.source_id,
@@ -82,4 +82,4 @@ as $$
     and c.embedding is not null
   order by c.embedding <=> query_embedding
   limit match_count;
-$$;
+$func$;
