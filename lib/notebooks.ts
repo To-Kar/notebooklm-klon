@@ -49,10 +49,22 @@ export async function listNotebooks(): Promise<Notebook[]> {
 }
 
 /**
+ * Postgres bricht ab, wenn ein Wert kein gueltiges UUID ist. Eine id aus der
+ * URL kann alles sein, deshalb pruefen wir die Form, bevor wir fragen.
+ */
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
  * Ein einzelnes Notebook.
- * Gibt null zurueck, wenn es die id nicht gibt. Echte DB-Fehler werfen.
+ * Gibt null zurueck, wenn die id unbekannt oder kein UUID ist.
+ * Echte DB-Fehler werfen.
  */
 export async function getNotebook(id: string): Promise<Notebook | null> {
+  if (!UUID_PATTERN.test(id)) {
+    return null;
+  }
+
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
