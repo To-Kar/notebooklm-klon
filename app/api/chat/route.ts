@@ -5,6 +5,7 @@ import {
   hasUsableContext,
 } from "@/lib/chat/prompt";
 import { retrieveChunks, type RetrievedChunk } from "@/lib/chat/retrieve";
+import { buildSearchQuery } from "@/lib/chat/rewrite";
 import { getNotebook } from "@/lib/notebooks";
 
 /**
@@ -129,11 +130,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const question = input.messages[input.messages.length - 1].content;
+  // Gesucht wird mit der aufgeloesten Frage, geantwortet auf Basis des
+  // vollen Verlaufs. Beides zu vermischen waere falsch: das Retrieval
+  // braucht einen eigenstaendigen Text, das Modell den Gespraechsfaden.
+  const searchQuery = await buildSearchQuery(input.messages, request.signal);
 
   let chunks: RetrievedChunk[];
   try {
-    chunks = await retrieveChunks(notebook.id, question);
+    chunks = await retrieveChunks(notebook.id, searchQuery);
   } catch (error) {
     console.error("Retrieval fehlgeschlagen:", error);
     return Response.json(

@@ -66,7 +66,11 @@ function toGeminiRole(role: ChatRole): "user" | "model" {
   return role === "assistant" ? "model" : "user";
 }
 
-function buildPayload(systemPrompt: string, messages: ChatMessage[]) {
+function buildPayload(
+  systemPrompt: string,
+  messages: ChatMessage[],
+  maxOutputTokens?: number,
+) {
   return {
     systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: messages.map((message) => ({
@@ -76,8 +80,41 @@ function buildPayload(systemPrompt: string, messages: ChatMessage[]) {
     generationConfig: {
       temperature: TEMPERATURE,
       thinkingConfig: { thinkingBudget: THINKING_BUDGET },
+      ...(maxOutputTokens === undefined ? {} : { maxOutputTokens }),
     },
   };
+}
+
+type GenerateResponse = {
+  candidates?: { content?: { parts?: { text?: string }[] } }[];
+};
+
+/**
+ * Eine kurze Antwort ohne Streaming.
+ *
+ * Fuer Zwischenschritte, deren Ergebnis der Nutzer nie zu sehen bekommt und
+ * bei denen Streaming nur Umstand waere.
+ */
+export async function generateText(
+  systemPrompt: string,
+  messages: ChatMessage[],
+  maxOutputTokens: number,
+  signal?: AbortSignal,
+): Promise<string> {
+  const model = readChatModel();
+
+  const response = await geminiRequest(
+    `${GEMINI_BASE}/models/${model}:generateContent`,
+    buildPayload(systemPrompt, messages, maxOutputTokens),
+    { budgetMs: RETRY_BUDGET_MS, signal },
+  );
+
+  const json = (await response.json()) as GenerateResponse;
+
+  return (json.candidates?.[0]?.content?.parts ?? [])
+    .map((part) => part.text ?? "")
+    .join("")
+    .trim();
 }
 
 type StreamChunk = {
