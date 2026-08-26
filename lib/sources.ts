@@ -34,6 +34,21 @@ export type Source = {
 const SOURCE_COLUMNS =
   "id, notebook_id, title, type, status, storage_path, url, created_at";
 
+/** Anzeigetexte fuer den Verarbeitungsstand. */
+export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
+  pending: "Wartet",
+  processing: "Wird verarbeitet",
+  ready: "Bereit",
+  error: "Fehler",
+};
+
+/** Anzeigetexte fuer die Herkunft. */
+export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
+  pdf: "PDF",
+  text: "Text",
+  url: "URL",
+};
+
 /** Dateiendung aus dem Mime-Type, nicht aus dem Dateinamen des Nutzers. */
 const EXTENSION_BY_MIME_TYPE = {
   "application/pdf": "pdf",
