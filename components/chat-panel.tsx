@@ -3,6 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ChatSource, ChatStreamEvent } from "@/app/api/chat/route";
+import {
+  AnswerWithCitations,
+  CitationDialog,
+  describeSource,
+  usedSources,
+} from "@/components/citation";
 
 /**
  * Der Chat eines Notebooks.
@@ -17,31 +23,14 @@ type ChatEntry = {
   sources?: ChatSource[];
 };
 
-/** Beschreibt eine Belegstelle so, wie sie unter der Antwort steht. */
-function describeSource(source: ChatSource): string {
-  return source.page === null
-    ? source.title
-    : `${source.title}, Seite ${source.page}`;
-}
-
-/**
- * Nur die Belege zeigen, auf die sich die Antwort wirklich beruft.
- *
- * Der Kontext enthaelt acht Auszuege, zitiert werden meist zwei oder drei.
- * Alle aufzulisten macht die Belegliste wertlos: bei mehreren Auszuegen aus
- * derselben Quelle stuenden dort sechs identische Zeilen, und der Nutzer
- * koennte nicht erkennen, worauf die Antwort tatsaechlich fusst.
- */
-function usedSources(content: string, sources: ChatSource[]): ChatSource[] {
-  const marker = new Set(
-    [...content.matchAll(/\[(\d+)\]/g)].map((treffer) => Number(treffer[1])),
-  );
-
-  return sources.filter((source) => marker.has(source.marker));
-}
-
-/** Die Belegliste unter einer Antwort. */
-function SourceList({ entry }: { entry: ChatEntry }) {
+/** Die Belegliste unter einer Antwort. Auch von hier kommt man zur Stelle. */
+function SourceList({
+  entry,
+  onSelect,
+}: {
+  entry: ChatEntry;
+  onSelect: (source: ChatSource) => void;
+}) {
   const belege = usedSources(entry.content, entry.sources ?? []);
 
   if (belege.length === 0) {
@@ -52,8 +41,14 @@ function SourceList({ entry }: { entry: ChatEntry }) {
     <ol className="space-y-1 border-t border-neutral-200 pt-2 text-xs text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
       {belege.map((source) => (
         <li key={source.chunkId}>
-          <span className="font-medium">[{source.marker}]</span>{" "}
-          {describeSource(source)}
+          <button
+            type="button"
+            onClick={() => onSelect(source)}
+            className="text-left transition hover:text-neutral-900 dark:hover:text-neutral-100"
+          >
+            <span className="font-medium">[{source.marker}]</span>{" "}
+            {describeSource(source)}
+          </button>
         </li>
       ))}
     </ol>
@@ -71,6 +66,8 @@ export function ChatPanel({
   const [frage, setFrage] = useState("");
   const [laeuft, setLaeuft] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
+  /** Die gerade geoeffnete Belegstelle, null wenn keine offen ist. */
+  const [beleg, setBeleg] = useState<ChatSource | null>(null);
 
   const abbruch = useRef<AbortController | null>(null);
   const ende = useRef<HTMLDivElement | null>(null);
@@ -212,16 +209,22 @@ export function ChatPanel({
                     : "max-w-[85%] space-y-2"
                 }
               >
-                {entry.role === "assistant" && entry.content.length === 0 ? (
+                {entry.role === "user" ? (
+                  <p className="whitespace-pre-wrap text-sm">{entry.content}</p>
+                ) : entry.content.length === 0 ? (
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     Sucht in den Quellen ...
                   </p>
                 ) : (
-                  <p className="whitespace-pre-wrap text-sm">{entry.content}</p>
+                  <AnswerWithCitations
+                    content={entry.content}
+                    sources={entry.sources ?? []}
+                    onSelect={setBeleg}
+                  />
                 )}
 
                 {entry.role === "assistant" ? (
-                  <SourceList entry={entry} />
+                  <SourceList entry={entry} onSelect={setBeleg} />
                 ) : null}
               </div>
             </div>
@@ -265,6 +268,16 @@ export function ChatPanel({
           {laeuft ? "Antwortet ..." : "Fragen"}
         </button>
       </form>
+
+      {beleg ? (
+        // key: ein Wechsel des Belegs baut den Dialog neu auf, statt einen
+        // veralteten Link stehen zu lassen.
+        <CitationDialog
+          key={beleg.chunkId}
+          source={beleg}
+          onClose={() => setBeleg(null)}
+        />
+      ) : null}
     </section>
   );
 }
