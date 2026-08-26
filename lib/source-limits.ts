@@ -1,10 +1,31 @@
 /**
- * Grenzwerte rund um Quellen.
+ * Grenzwerte und Anzeigetexte rund um Quellen.
  *
  * Bewusst ohne Server-Abhaengigkeiten, damit Client-Komponenten sie
  * importieren koennen, ohne lib/supabase/server.ts in den Browser-Bundle
  * zu ziehen. Siehe lib/notebook-limits.ts.
  */
+
+/** Verarbeitungsstand einer Quelle, siehe status-Check in 0001_init.sql. */
+export type SourceStatus = "pending" | "processing" | "ready" | "error";
+
+/** Herkunft einer Quelle, siehe type-Check in 0001_init.sql. */
+export type SourceType = "pdf" | "text" | "url";
+
+/** Anzeigetexte fuer den Verarbeitungsstand. */
+export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
+  pending: "Wartet",
+  processing: "Wird verarbeitet",
+  ready: "Bereit",
+  error: "Fehler",
+};
+
+/** Anzeigetexte fuer die Herkunft. */
+export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
+  pdf: "PDF",
+  text: "Text",
+  url: "URL",
+};
 
 /** Name des privaten Storage-Buckets aus supabase/migrations/0003_sources.sql. */
 export const SOURCE_BUCKET = "source-files";

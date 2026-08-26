@@ -3,6 +3,8 @@ import {
   SOURCE_FILE_MAX_BYTES,
   SOURCE_FILE_TYPES,
   SOURCE_TITLE_MAX_LENGTH,
+  type SourceStatus,
+  type SourceType,
   isAllowedSourceMimeType,
 } from "@/lib/source-limits";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -14,11 +16,7 @@ import { createAdminClient } from "@/lib/supabase/server";
  * Das Modul haengt an lib/supabase/server.ts und damit am Secret-Key.
  */
 
-/** Verarbeitungsstand einer Quelle, siehe status-Check in 0001_init.sql. */
-export type SourceStatus = "pending" | "processing" | "ready" | "error";
-
-/** Herkunft einer Quelle, siehe type-Check in 0001_init.sql. */
-export type SourceType = "pdf" | "text" | "url";
+export type { SourceStatus, SourceType };
 
 export type Source = {
   id: string;
@@ -34,20 +32,11 @@ export type Source = {
 const SOURCE_COLUMNS =
   "id, notebook_id, title, type, status, storage_path, url, created_at";
 
-/** Anzeigetexte fuer den Verarbeitungsstand. */
-export const SOURCE_STATUS_LABELS: Record<SourceStatus, string> = {
-  pending: "Wartet",
-  processing: "Wird verarbeitet",
-  ready: "Bereit",
-  error: "Fehler",
-};
-
-/** Anzeigetexte fuer die Herkunft. */
-export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
-  pdf: "PDF",
-  text: "Text",
-  url: "URL",
-};
+/**
+ * Die Anzeigetexte liegen in lib/source-limits.ts, weil auch
+ * Client-Komponenten sie brauchen und dieses Modul den Server-Client
+ * mitbringt.
+ */
 
 /** Dateiendung aus dem Mime-Type, nicht aus dem Dateinamen des Nutzers. */
 const EXTENSION_BY_MIME_TYPE = {
@@ -70,6 +59,23 @@ export async function listSources(notebookId: string): Promise<Source[]> {
   }
 
   return data ?? [];
+}
+
+/** Eine einzelne Quelle. Gibt null zurueck, wenn die id unbekannt ist. */
+export async function getSource(id: string): Promise<Source | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("sources")
+    .select(SOURCE_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Quelle konnte nicht geladen werden: ${error.message}`);
+  }
+
+  return data;
 }
 
 /** Schneidet einen Titel auf die erlaubte Laenge und entfernt Leerraum. */

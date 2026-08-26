@@ -2,24 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
+import { SourceStatusBadge } from "@/components/source-status";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
-import {
-  SOURCE_STATUS_LABELS,
-  SOURCE_TYPE_LABELS,
-  listSources,
-  type Source,
-} from "@/lib/sources";
+import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
+import { listSources, type Source } from "@/lib/sources";
 
 /** Wie auf der Startseite: der Stand kommt aus der DB, nicht aus dem Build. */
 export const dynamic = "force-dynamic";
 
-/** Farbe des Status-Badges. Nur 'error' faellt bewusst aus dem Grau heraus. */
-const statusClass: Record<Source["status"], string> = {
-  pending: "text-neutral-500 dark:text-neutral-400",
-  processing: "text-neutral-500 dark:text-neutral-400",
-  ready: "text-emerald-600 dark:text-emerald-400",
-  error: "text-red-600 dark:text-red-400",
-};
+/**
+ * Die Ingestion laeuft in einer Server Action dieser Route: extrahieren,
+ * chunken, embedden. Bei zwei Embedding-Batches kostet das gemessen rund
+ * 25 Sekunden, das Standardlimit von 10 Sekunden reicht nicht.
+ */
+export const maxDuration = 60;
 
 function SourceItem({ source }: { source: Source }) {
   return (
@@ -27,14 +23,12 @@ function SourceItem({ source }: { source: Source }) {
       <p className="truncate text-sm font-medium" title={source.title}>
         {source.title}
       </p>
-      <p className="mt-0.5 flex items-center gap-1.5 text-xs">
+      <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs">
         <span className="text-neutral-500 dark:text-neutral-400">
           {SOURCE_TYPE_LABELS[source.type]}
         </span>
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
-        <span className={statusClass[source.status]}>
-          {SOURCE_STATUS_LABELS[source.status]}
-        </span>
+        <SourceStatusBadge sourceId={source.id} status={source.status} />
       </p>
     </li>
   );
