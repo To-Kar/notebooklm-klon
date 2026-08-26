@@ -1,3 +1,5 @@
+import { GEMINI_BASE, RateLimitError, geminiRequest } from "@/lib/gemini";
+
 /**
  * Embedding-Anbieter.
  *
@@ -8,6 +10,9 @@
  * Der Gemini-spezifische Teil steckt unten und ist die einzige Stelle, die
  * beim Anbieterwechsel angefasst werden muss.
  */
+
+/** Weiterhin von hier exportiert, damit Aufrufer nur ein Modul kennen muessen. */
+export { RateLimitError };
 
 /**
  * Dimension der Vektoren.
@@ -22,25 +27,20 @@ export const EMBEDDING_DIMENSIONS = 1536;
 /** Vom Endpunkt erzwungenes Maximum pro Batch-Aufruf. */
 const MAX_BATCH_SIZE = 100;
 
-const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta";
-
 /**
  * Gemini unterscheidet, ob ein Text als Dokument abgelegt oder als Frage
  * gestellt wird. Die dokumentierte Verwendung fuer Retrieval.
  */
 type TaskType = "RETRIEVAL_DOCUMENT" | "RETRIEVAL_QUERY";
 
-function readConfig() {
-  const apiKey = process.env.LLM_API_KEY;
+function readEmbeddingModel(): string {
   const model = process.env.EMBEDDING_MODEL;
 
-  if (!apiKey || !model) {
-    throw new Error(
-      "Fehlende Env-Variablen: LLM_API_KEY / EMBEDDING_MODEL",
-    );
+  if (!model) {
+    throw new Error("Fehlende Env-Variable: EMBEDDING_MODEL");
   }
 
-  return { apiKey, model };
+  return model;
 }
 
 /**
@@ -75,25 +75,6 @@ function assertDimensions(vector: number[]): number[] {
   return vector;
 }
 
-/** Wartet die angegebene Zeit. */
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Signalisiert ein erschoepftes Kontingent des Anbieters.
- *
- * Eigener Typ, damit die Ingestion daraus eine verstaendliche Meldung machen
- * kann statt eines generischen Fehlers - der Nutzer soll wissen, dass ein
- * spaeterer Versuch hilft.
- */
-export class RateLimitError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "RateLimitError";
-  }
-}
-
 /**
  * Gesamtes Wartebudget ueber alle Wiederholungen.
  *
@@ -110,92 +91,6 @@ export class RateLimitError extends Error {
  */
 const RETRY_BUDGET_MS = 45_000;
 
-/**
- * Gemini legt einem 429 ein RetryInfo-Detail bei, etwa { retryDelay: "27s" }.
- * Diese Angabe ist brauchbarer als ein geratenes Backoff.
- */
-function readRetryDelayMs(errorBody: string): number | null {
-  try {
-    const parsed = JSON.parse(errorBody) as {
-      error?: { details?: { retryDelay?: string }[] };
-    };
-
-    for (const detail of parsed.error?.details ?? []) {
-      const match = detail.retryDelay?.match(/^([\d.]+)s$/);
-      if (match) {
-        return Math.ceil(Number(match[1]) * 1000);
-      }
-    }
-  } catch {
-    // Kein JSON oder unerwartete Form: dann eben geraten.
-  }
-
-  return null;
-}
-
-/**
- * Ruft den Endpunkt auf und wiederholt bei Rate-Limit oder Serverfehler.
- *
- * Ohne Wiederholung liefe ein Ingestion-Lauf ueber mehrere Batches mitten im
- * Dokument auf 429 und liesse die Quelle halb verarbeitet zurueck.
- */
-async function postWithRetry(
-  url: string,
-  body: unknown,
-  apiKey: string,
-): Promise<unknown> {
-  let spentMs = 0;
-  let attempt = 0;
-
-  for (;;) {
-    attempt += 1;
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        // Key im Header, nicht in der URL: URLs landen in Logs.
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (response.ok) {
-      return response.json();
-    }
-
-    const detail = await response.text();
-    const isRateLimit = response.status === 429;
-    const isRetryable = isRateLimit || response.status >= 500;
-
-    if (!isRetryable) {
-      throw new Error(
-        `Embedding-Anbieter antwortete mit ${response.status}: ${detail.slice(0, 300)}`,
-      );
-    }
-
-    // Vorschlag des Anbieters, sonst 2s, 4s, 8s ...
-    const suggested = readRetryDelayMs(detail);
-    const waitMs = suggested ?? 2 ** attempt * 1000;
-
-    if (spentMs + waitMs > RETRY_BUDGET_MS) {
-      if (isRateLimit) {
-        throw new RateLimitError(
-          "Das Kontingent des Embedding-Anbieters ist erschoepft. " +
-            "Versuch es in ein paar Minuten noch einmal.",
-        );
-      }
-
-      throw new Error(
-        `Embedding-Anbieter antwortete mit ${response.status}: ${detail.slice(0, 300)}`,
-      );
-    }
-
-    await delay(waitMs);
-    spentMs += waitMs;
-  }
-}
-
 type BatchResponse = {
   embeddings?: { values?: number[] }[];
 };
@@ -204,7 +99,7 @@ async function embedBatch(
   texts: string[],
   taskType: TaskType,
 ): Promise<number[][]> {
-  const { apiKey, model } = readConfig();
+  const model = readEmbeddingModel();
 
   const payload = {
     requests: texts.map((text) => ({
@@ -215,11 +110,13 @@ async function embedBatch(
     })),
   };
 
-  const json = (await postWithRetry(
+  const response = await geminiRequest(
     `${GEMINI_BASE}/models/${model}:batchEmbedContents`,
     payload,
-    apiKey,
-  )) as BatchResponse;
+    { budgetMs: RETRY_BUDGET_MS },
+  );
+
+  const json = (await response.json()) as BatchResponse;
 
   const embeddings = json.embeddings ?? [];
 
