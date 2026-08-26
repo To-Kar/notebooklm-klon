@@ -7,6 +7,7 @@ import {
 import { retrieveChunks, type RetrievedChunk } from "@/lib/chat/retrieve";
 import { buildSearchQuery } from "@/lib/chat/rewrite";
 import { getNotebook } from "@/lib/notebooks";
+import type { SourceType } from "@/lib/source-limits";
 
 /**
  * Chat-Endpunkt.
@@ -43,10 +44,20 @@ export type ChatSource = {
   marker: number;
   chunkId: string;
   sourceId: string;
+  sourceType: SourceType;
   title: string;
   page: number | null;
   url: string | null;
   similarity: number;
+  /**
+   * Der woertliche Abschnitt, auf den sich die Antwort beruft.
+   *
+   * Geht mit, obwohl er den Stream groesser macht: ohne ihn muesste der
+   * Browser fuer jeden Klick nachladen, und der Beleg waere einen
+   * Netzwerkaufruf weit statt sofort da. Das Nachpruefen einer Aussage ist
+   * der Kern dieses Produkts und darf sich nicht traege anfuehlen.
+   */
+  content: string;
 };
 
 function toChatSources(chunks: RetrievedChunk[]): ChatSource[] {
@@ -54,10 +65,12 @@ function toChatSources(chunks: RetrievedChunk[]): ChatSource[] {
     marker: index + 1,
     chunkId: chunk.chunkId,
     sourceId: chunk.sourceId,
+    sourceType: chunk.sourceType,
     title: chunk.sourceTitle,
     page: chunk.page,
     url: chunk.sourceUrl,
     similarity: chunk.similarity,
+    content: chunk.content,
   }));
 }
 
