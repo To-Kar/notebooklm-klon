@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
+import { ChatPanel } from "@/components/chat-panel";
 import { SourceStatusBadge } from "@/components/source-status";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
@@ -83,13 +84,11 @@ export default async function NotebookPage({
           )}
         </aside>
 
-        {/* Der Chat folgt in Arbeitspaket 4, die Zitate in Arbeitspaket 5. */}
-        <section className="rounded-xl border border-dashed border-neutral-300 px-4 py-10 text-center dark:border-neutral-700">
-          <p className="text-sm font-medium">Chat</p>
-          <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-            Antworten mit klickbaren Zitaten folgen.
-          </p>
-        </section>
+        {/* Klickbare Zitate folgen in Arbeitspaket 5. */}
+        <ChatPanel
+          notebookId={notebook.id}
+          hasReadySources={sources.some((source) => source.status === "ready")}
+        />
       </div>
     </main>
   );
