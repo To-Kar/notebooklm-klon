@@ -8,12 +8,14 @@ import { createNotebook } from "@/lib/notebooks";
 /**
  * Rueckgabe der Server Action fuer useActionState.
  * error === null bedeutet Erfolg.
+ *
+ * Nur Typen, keine Werte: eine "use server"-Datei darf ausschliesslich
+ * async Funktionen exportieren. Typen verschwinden beim Kompilieren und
+ * sind deshalb erlaubt.
  */
 export type CreateNotebookState = {
   error: string | null;
 };
-
-export const createNotebookInitialState: CreateNotebookState = { error: null };
 
 /**
  * Legt ein Notebook an und aktualisiert danach die Startseite.

@@ -4,9 +4,11 @@ import { useActionState } from "react";
 
 import {
   createNotebookAction,
-  createNotebookInitialState,
+  type CreateNotebookState,
 } from "@/app/notebooks/actions";
 import { NOTEBOOK_TITLE_MAX_LENGTH } from "@/lib/notebook-limits";
+
+const INITIAL_STATE: CreateNotebookState = { error: null };
 
 /**
  * Anlege-Formular fuer ein Notebook.
@@ -18,7 +20,7 @@ import { NOTEBOOK_TITLE_MAX_LENGTH } from "@/lib/notebook-limits";
 export function NewNotebookForm() {
   const [state, formAction, pending] = useActionState(
     createNotebookAction,
-    createNotebookInitialState,
+    INITIAL_STATE,
   );
 
   const hasError = state.error !== null;
