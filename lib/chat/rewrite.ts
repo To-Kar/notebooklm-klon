@@ -43,7 +43,7 @@ const EIGENSTAENDIG_AB_WOERTERN = 8;
  * Eine Heuristik. Trifft sie daneben, wird mit der Rohfrage gesucht - also
  * genau so, wie es ohne das Umschreiben ohnehin waere.
  */
-function brauchtVerlauf(frage: string): boolean {
+export function brauchtVerlauf(frage: string): boolean {
   const woerter = frage
     .toLowerCase()
     .split(/[^a-zäöüß]+/)
