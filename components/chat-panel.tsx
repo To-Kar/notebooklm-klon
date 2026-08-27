@@ -6,9 +6,8 @@ import type { ChatSource, ChatStreamEvent } from "@/app/api/chat/route";
 import {
   AnswerWithCitations,
   CitationDialog,
-  describeSource,
-  usedSources,
 } from "@/components/citation";
+import { describeSource, usedSources } from "@/lib/chat/citations";
 
 /**
  * Der Chat eines Notebooks.

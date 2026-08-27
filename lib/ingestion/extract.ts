@@ -46,7 +46,7 @@ export class ExtractionError extends Error {
  * Aufloesung selbst uebernehmen. Fuer eine Demo ohne Auth ist das die
  * Abwaegung; fuer den Produktivbetrieb waere es zu wenig.
  */
-function isBlockedHost(hostname: string): boolean {
+export function isBlockedHost(hostname: string): boolean {
   const host = hostname.toLowerCase().replace(/^\[/, "").replace(/\]$/, "");
 
   if (
