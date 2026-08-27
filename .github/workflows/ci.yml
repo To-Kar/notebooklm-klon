@@ -1,0 +1,55 @@
+name: CI
+
+# Laeuft bei jedem Push auf main und bei jedem Pull Request dorthin.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pruefen:
+    name: Lint, Typen, Tests, Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Abhaengigkeiten installieren
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # LayoutProps und PageProps erzeugt Next selbst und legt sie unter
+      # .next/types ab; tsconfig bezieht sie ein. Auf einem frischen Checkout
+      # gibt es das Verzeichnis nicht, und der Typecheck scheitert an
+      # "Cannot find name 'PageProps'". Lokal faellt das nicht auf, weil dort
+      # noch Reste frueherer Builds liegen.
+      - name: Routentypen erzeugen
+        run: npx next typegen
+
+      - name: Typen pruefen
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      # Der Build braucht keine echten Werte: alle Seiten sind als dynamisch
+      # markiert, es wird also nichts zur Build-Zeit gegen Supabase gerendert.
+      # Die Variablen muessen aber gesetzt sein, damit der Modulcode nicht
+      # beim Laden ueber fehlende Env stolpert.
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://beispiel.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_platzhalter
+          SUPABASE_SECRET_KEY: sb_secret_platzhalter
+          LLM_API_KEY: platzhalter
+          LLM_MODEL: gemini-3.5-flash
+          EMBEDDING_MODEL: gemini-embedding-001
