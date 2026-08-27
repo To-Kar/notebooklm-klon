@@ -26,11 +26,20 @@ export type Source = {
   status: SourceStatus;
   storage_path: string | null;
   url: string | null;
+  /** Grund des letzten Fehlversuchs, nur bei status === 'error' gesetzt. */
+  error_message: string | null;
   created_at: string;
 };
 
-const SOURCE_COLUMNS =
-  "id, notebook_id, title, type, status, storage_path, url, created_at";
+/**
+ * Die Spaltenliste aller Quellen-Queries.
+ *
+ * Exportiert, damit sie an genau einer Stelle steht: eine zweite Kopie
+ * wuerde beim naechsten Spaltenzuwachs stehenbleiben, und die Luecke faele
+ * erst auf, wenn irgendwo ein Feld fehlt.
+ */
+export const SOURCE_COLUMNS =
+  "id, notebook_id, title, type, status, storage_path, url, error_message, created_at";
 
 /**
  * Die Anzeigetexte liegen in lib/source-limits.ts, weil auch
