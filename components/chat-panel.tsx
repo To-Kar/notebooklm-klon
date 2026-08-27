@@ -3,20 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ChatSource, ChatStreamEvent } from "@/app/api/chat/route";
+import { clearConversationAction } from "@/app/notebooks/conversation-actions";
 import {
   AnswerWithCitations,
   CitationDialog,
 } from "@/components/citation";
+import { ConfirmButton } from "@/components/confirm-button";
 import { describeSource, usedSources } from "@/lib/chat/citations";
 
 /**
  * Der Chat eines Notebooks.
  *
- * Der Verlauf lebt bewusst nur im Browser: es gibt keine messages-Tabelle,
- * und ein Reload beginnt ein neues Gespraech. Eine bewusste Demo-Entscheidung.
+ * Der Verlauf kommt vom Server und wird dort auch fortgeschrieben. Der
+ * Browser haelt ihn nur, solange die Seite offen ist, und schickt bei einer
+ * neuen Frage ausschliesslich diese - alles andere weiss der Server besser.
  */
 
-type ChatEntry = {
+export type ChatEntry = {
   role: "user" | "assistant";
   content: string;
   sources?: ChatSource[];
@@ -57,11 +60,14 @@ function SourceList({
 export function ChatPanel({
   notebookId,
   hasReadySources,
+  initialEntries,
 }: {
   notebookId: string;
   hasReadySources: boolean;
+  /** Der gespeicherte Verlauf, vom Server geladen. */
+  initialEntries: ChatEntry[];
 }) {
-  const [entries, setEntries] = useState<ChatEntry[]>([]);
+  const [entries, setEntries] = useState<ChatEntry[]>(initialEntries);
   const [frage, setFrage] = useState("");
   const [laeuft, setLaeuft] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
@@ -103,13 +109,8 @@ export function ChatPanel({
         method: "POST",
         headers: { "content-type": "application/json" },
         signal: controller.signal,
-        body: JSON.stringify({
-          notebookId,
-          // Die leere Antwort am Ende gehoert nicht in die Anfrage.
-          messages: verlauf
-            .slice(0, -1)
-            .map(({ role, content }) => ({ role, content })),
-        }),
+        // Nur die Frage: den Verlauf kennt der Server aus der Datenbank.
+        body: JSON.stringify({ notebookId, question: text }),
       });
 
       if (!response.ok || !response.body) {
@@ -183,6 +184,18 @@ export function ChatPanel({
 
   return (
     <section className="flex min-h-[28rem] flex-col rounded-xl border border-neutral-200 dark:border-neutral-800">
+      {entries.length > 0 ? (
+        <div className="flex justify-end border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
+          <ConfirmButton
+            size="klein"
+            label="Gespraech leeren"
+            question="Gespraech mit allen Antworten und Belegen leeren?"
+            action={() => clearConversationAction(notebookId)}
+            onDone={() => setEntries([])}
+          />
+        </div>
+      ) : null}
+
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {entries.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
