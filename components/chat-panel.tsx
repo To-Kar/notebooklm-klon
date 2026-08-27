@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import type { ChatSource, ChatStreamEvent } from "@/app/api/chat/route";
+import { clearConversationAction } from "@/app/notebooks/conversation-actions";
 import {
   AnswerWithCitations,
   CitationDialog,
 } from "@/components/citation";
+import { ConfirmButton } from "@/components/confirm-button";
 import { describeSource, usedSources } from "@/lib/chat/citations";
 
 /**
@@ -182,6 +184,18 @@ export function ChatPanel({
 
   return (
     <section className="flex min-h-[28rem] flex-col rounded-xl border border-neutral-200 dark:border-neutral-800">
+      {entries.length > 0 ? (
+        <div className="flex justify-end border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
+          <ConfirmButton
+            size="klein"
+            label="Gespraech leeren"
+            question="Gespraech mit allen Antworten und Belegen leeren?"
+            action={() => clearConversationAction(notebookId)}
+            onDone={() => setEntries([])}
+          />
+        </div>
+      ) : null}
+
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {entries.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
