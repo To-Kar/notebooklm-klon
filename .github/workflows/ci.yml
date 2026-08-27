@@ -26,6 +26,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # LayoutProps und PageProps erzeugt Next selbst und legt sie unter
+      # .next/types ab; tsconfig bezieht sie ein. Auf einem frischen Checkout
+      # gibt es das Verzeichnis nicht, und der Typecheck scheitert an
+      # "Cannot find name 'PageProps'". Lokal faellt das nicht auf, weil dort
+      # noch Reste frueherer Builds liegen.
+      - name: Routentypen erzeugen
+        run: npx next typegen
+
       - name: Typen pruefen
         run: npx tsc --noEmit
 
