@@ -6,6 +6,7 @@ import type { Source } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
 import type { TextSegment } from "./chunk";
+import { BlockedAddressError, fetchOnce, type SafeResponse } from "./safe-fetch";
 
 /**
  * Holt den reinen Text einer Quelle.
@@ -35,16 +36,13 @@ export class ExtractionError extends Error {
 }
 
 /**
- * Blockiert Adressen im privaten Netz.
+ * Billige Vorpruefung auf dem Hostnamen.
  *
- * Ohne Auth kann jeder eine beliebige URL eintragen, und der Abruf laeuft auf
- * unserem Server. Ohne diese Pruefung waere das ein Werkzeug, um interne
- * Dienste oder den Metadaten-Endpunkt der Cloud abzufragen.
- *
- * Die Pruefung arbeitet auf dem Hostnamen. Ein Name, der erst per DNS auf eine
- * interne Adresse zeigt, wird damit nicht erfasst - dafuer muesste man die
- * Aufloesung selbst uebernehmen. Fuer eine Demo ohne Auth ist das die
- * Abwaegung; fuer den Produktivbetrieb waere es zu wenig.
+ * Faengt die offensichtlichen Faelle ab, bevor ueberhaupt jemand das DNS
+ * fragt: localhost, .local, .internal und Adressliterale. Die eigentliche
+ * Absicherung sitzt in safe-fetch.ts und prueft die aufgeloeste Adresse beim
+ * Verbindungsaufbau - ein unauffaelliger Name, der per DNS ins private Netz
+ * zeigt, faellt erst dort auf.
  */
 export function isBlockedHost(hostname: string): boolean {
   const host = hostname.toLowerCase().replace(/^\[/, "").replace(/\]$/, "");
@@ -79,8 +77,14 @@ export function isBlockedHost(hostname: string): boolean {
   return false;
 }
 
-/** Folgt Weiterleitungen selbst, damit jedes Ziel geprueft wird. */
-async function fetchDocument(startUrl: string): Promise<Response> {
+/**
+ * Folgt Weiterleitungen selbst, damit jedes Ziel einzeln geprueft wird.
+ *
+ * Die Abrufschicht damit zu beauftragen waere bequemer, wuerde aber die
+ * Zwischenziele ungeprueft lassen - und eine Weiterleitung ins private Netz
+ * ist genau der Weg, den ein Angreifer nimmt.
+ */
+async function fetchDocument(startUrl: string): Promise<SafeResponse> {
   let current = startUrl;
 
   for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
@@ -96,20 +100,16 @@ async function fetchDocument(startUrl: string): Promise<Response> {
       );
     }
 
-    const response = await fetch(current, {
-      redirect: "manual",
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: { accept: "text/html,text/plain" },
+    const response = await fetchOnce(current, {
+      maxBytes: MAX_FETCH_BYTES,
+      timeoutMs: FETCH_TIMEOUT_MS,
     });
 
-    const isRedirect = response.status >= 300 && response.status < 400;
-    const location = response.headers.get("location");
-
-    if (!isRedirect || !location) {
+    if (!response.location) {
       return response;
     }
 
-    current = new URL(location, current).toString();
+    current = new URL(response.location, current).toString();
   }
 
   throw new ExtractionError("Zu viele Weiterleitungen.");
@@ -170,30 +170,31 @@ export async function extractSourceSegments(
       throw new ExtractionError("Der Quelle fehlt die Adresse.");
     }
 
-    const response = await fetchDocument(source.url);
+    let response;
+    try {
+      response = await fetchDocument(source.url);
+    } catch (error) {
+      // Eine gesperrte Adresse ist kein technischer Fehler, sondern eine
+      // Entscheidung - der Nutzer soll den Grund lesen koennen.
+      if (error instanceof BlockedAddressError) {
+        throw new ExtractionError(error.message);
+      }
+      throw error;
+    }
 
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new ExtractionError(
         `Die Seite antwortete mit Status ${response.status}.`,
       );
     }
 
-    const contentType = response.headers.get("content-type") ?? "";
-    const declaredLength = Number(response.headers.get("content-length") ?? 0);
-
-    if (declaredLength > MAX_FETCH_BYTES) {
-      throw new ExtractionError("Die Seite ist zu gross.");
-    }
-
-    const body = (await response.text()).slice(0, MAX_FETCH_BYTES);
-
-    if (contentType.includes("text/html")) {
-      segments = extractHtml(body);
-    } else if (contentType.includes("text/plain")) {
-      segments = [{ text: body }];
+    if (response.contentType.includes("text/html")) {
+      segments = extractHtml(response.body);
+    } else if (response.contentType.includes("text/plain")) {
+      segments = [{ text: response.body }];
     } else {
       throw new ExtractionError(
-        `Inhaltstyp wird nicht unterstuetzt: ${contentType || "unbekannt"}`,
+        `Inhaltstyp wird nicht unterstuetzt: ${response.contentType || "unbekannt"}`,
       );
     }
   } else {
