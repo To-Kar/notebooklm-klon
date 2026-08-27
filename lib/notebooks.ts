@@ -1,4 +1,5 @@
 import { NOTEBOOK_TITLE_MAX_LENGTH } from "@/lib/notebook-limits";
+import { listSourceFilePaths, removeSourceFiles } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
 /**
@@ -78,6 +79,29 @@ export async function getNotebook(id: string): Promise<Notebook | null> {
   }
 
   return data;
+}
+
+/**
+ * Loescht ein Notebook mit allem, was daran haengt.
+ *
+ * Sources und Chunks raeumen die Foreign Keys ab. Die hochgeladenen Dateien
+ * nicht - die muessen vor dem Loeschen der Zeilen eingesammelt werden, danach
+ * waere nicht mehr auffindbar, welche zu diesem Notebook gehoerten.
+ */
+export async function deleteNotebook(id: string): Promise<void> {
+  if (!UUID_PATTERN.test(id)) {
+    return;
+  }
+
+  const paths = await listSourceFilePaths(id);
+  await removeSourceFiles(paths);
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("notebooks").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(`Notebook konnte nicht geloescht werden: ${error.message}`);
+  }
 }
 
 /**

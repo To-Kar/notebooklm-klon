@@ -78,6 +78,79 @@ export async function getSource(id: string): Promise<Source | null> {
   return data;
 }
 
+/**
+ * Entfernt Dateien aus dem Bucket.
+ *
+ * Foreign Keys raeumen beim Loeschen einer Quelle die Chunks ab, aber der
+ * Storage kennt kein Kaskadieren - die Datei bliebe unsichtbar liegen. Diese
+ * Funktion ist die einzige Stelle, an der Objekte entfernt werden.
+ */
+export async function removeSourceFiles(paths: string[]): Promise<void> {
+  const vorhandene = paths.filter((path) => path.length > 0);
+
+  if (vorhandene.length === 0) {
+    return;
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.storage
+    .from(SOURCE_BUCKET)
+    .remove(vorhandene);
+
+  if (error) {
+    throw new Error(`Dateien konnten nicht entfernt werden: ${error.message}`);
+  }
+}
+
+/**
+ * Loescht eine Quelle samt Datei und Chunks.
+ *
+ * Reihenfolge mit Absicht: erst die Datei, dann die Zeile. Schlaegt das
+ * Loeschen der Zeile danach fehl, bleibt eine sichtbare Quelle ohne Datei
+ * zurueck - ein Zustand, den der Nutzer sieht und durch erneutes Loeschen
+ * beheben kann. Andersherum bliebe eine verwaiste Datei im Bucket, die
+ * niemand mehr findet.
+ */
+export async function deleteSource(id: string): Promise<void> {
+  const source = await getSource(id);
+
+  if (!source) {
+    return;
+  }
+
+  if (source.storage_path) {
+    await removeSourceFiles([source.storage_path]);
+  }
+
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("sources").delete().eq("id", id);
+
+  if (error) {
+    throw new Error(`Quelle konnte nicht geloescht werden: ${error.message}`);
+  }
+}
+
+/** Die Storage-Pfade aller Dateien eines Notebooks. */
+export async function listSourceFilePaths(
+  notebookId: string,
+): Promise<string[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("sources")
+    .select("storage_path")
+    .eq("notebook_id", notebookId)
+    .not("storage_path", "is", null);
+
+  if (error) {
+    throw new Error(`Dateipfade konnten nicht geladen werden: ${error.message}`);
+  }
+
+  return ((data ?? []) as { storage_path: string | null }[])
+    .map((row) => row.storage_path)
+    .filter((path): path is string => path !== null);
+}
+
 /** Schneidet einen Titel auf die erlaubte Laenge und entfernt Leerraum. */
 function normalizeTitle(title: string): string {
   return title.trim().slice(0, SOURCE_TITLE_MAX_LENGTH);
