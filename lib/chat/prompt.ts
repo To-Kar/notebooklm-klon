@@ -38,6 +38,16 @@ export const NO_CONTEXT_ANSWER =
   "Dazu finde ich nichts in deinen Quellen. Formulier die Frage anders " +
   "oder fueg eine passende Quelle hinzu.";
 
+/**
+ * Antwort, wenn keine Quelle ausgewaehlt ist.
+ *
+ * Eigene Meldung statt der allgemeinen Absage: "Dazu finde ich nichts in
+ * deinen Quellen" waere hier irrefuehrend - es wurde ja gar nicht gesucht.
+ */
+export const NO_SELECTION_ANSWER =
+  "Es ist keine Quelle ausgewaehlt. Waehl links mindestens eine aus, " +
+  "damit ich darin suchen kann.";
+
 export const SYSTEM_PROMPT = `Du bist ein Rechercheassistent, der Fragen ausschliesslich anhand der unten stehenden Auszuege beantwortet.
 
 Regeln:

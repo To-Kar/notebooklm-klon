@@ -51,7 +51,13 @@ type ChunkDetailRow = {
 };
 
 /**
- * Sucht die aehnlichsten Abschnitte im Notebook.
+ * Sucht die aehnlichsten Abschnitte in den ausgewaehlten Quellen.
+ *
+ * Ohne Einschraenkung verdraengt eine grosse Quelle eine kleine: gemessen an
+ * einem Notebook mit 19 Chunks aus einem Artikel und 3 aus einem PDF war
+ * unter den besten acht Treffern kein einziger aus dem PDF. Deshalb filtert
+ * die Datenbank, nicht der Anwendungscode - nachtraeglich zu filtern liesse
+ * in genau diesem Fall nichts uebrig.
  *
  * Zwei Abfragen mit Absicht: match_chunks liefert die Rangfolge, gibt aber
  * weder metadata noch Angaben zur Quelle zurueck. Die Funktion dafuer
@@ -63,21 +69,25 @@ type ChunkDetailRow = {
 export async function retrieveChunks(
   notebookId: string,
   question: string,
+  sourceIds: string[],
   matchCount: number = DEFAULT_MATCH_COUNT,
 ): Promise<RetrievedChunk[]> {
   const trimmedQuestion = question.trim();
 
-  if (trimmedQuestion.length === 0) {
+  if (trimmedQuestion.length === 0 || sourceIds.length === 0) {
     return [];
   }
 
   const supabase = createAdminClient();
   const embedding = await embedQuery(trimmedQuestion);
 
-  const { data, error } = await supabase.rpc("match_chunks", {
+  const { data, error } = await supabase.rpc("match_chunks_in_sources", {
     // pgvector nimmt die Textform entgegen, wie beim Schreiben der Chunks.
+    // Die Funktion deklariert den Parameter als text und castet intern,
+    // damit die Embedding-Dimension nur in 0001_init.sql steht.
     query_embedding: JSON.stringify(embedding),
     match_notebook_id: notebookId,
+    match_source_ids: sourceIds,
     match_count: matchCount,
   });
 
