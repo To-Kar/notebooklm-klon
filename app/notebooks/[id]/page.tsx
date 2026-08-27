@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
 import { ChatPanel } from "@/components/chat-panel";
+import {
+  DeleteNotebookButton,
+  DeleteSourceButton,
+} from "@/components/delete-controls";
 import { SourceStatusBadge } from "@/components/source-status";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
@@ -30,6 +34,8 @@ function SourceItem({ source }: { source: Source }) {
         </span>
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
         <SourceStatusBadge sourceId={source.id} status={source.status} />
+        <span className="text-neutral-300 dark:text-neutral-700">/</span>
+        <DeleteSourceButton sourceId={source.id} />
       </p>
     </li>
   );
@@ -56,13 +62,20 @@ export default async function NotebookPage({
         &larr; Alle Notebooks
       </Link>
 
-      <header className="mt-4">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {notebook.title}
-        </h1>
-        <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-          Erstellt am {formatNotebookDate(notebook.created_at)}
-        </p>
+      <header className="mt-4 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {notebook.title}
+          </h1>
+          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+            Erstellt am {formatNotebookDate(notebook.created_at)}
+          </p>
+        </div>
+
+        <DeleteNotebookButton
+          notebookId={notebook.id}
+          sourceCount={sources.length}
+        />
       </header>
 
       <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
