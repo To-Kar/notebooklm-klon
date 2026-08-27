@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
-import { ChatPanel } from "@/components/chat-panel";
+import { ChatPanel, type ChatEntry } from "@/components/chat-panel";
 import {
   DeleteNotebookButton,
   DeleteSourceButton,
@@ -10,6 +10,7 @@ import {
 import { SourceStatusBadge } from "@/components/source-status";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
+import { listMessages } from "@/lib/messages";
 import { listSources, type Source } from "@/lib/sources";
 
 /** Wie auf der Startseite: der Stand kommt aus der DB, nicht aus dem Build. */
@@ -55,7 +56,17 @@ export default async function NotebookPage({
     notFound();
   }
 
-  const sources = await listSources(notebook.id);
+  // Quellen und Verlauf zusammen holen, nicht nacheinander.
+  const [sources, messages] = await Promise.all([
+    listSources(notebook.id),
+    listMessages(notebook.id),
+  ]);
+
+  const initialEntries: ChatEntry[] = messages.map((message) => ({
+    role: message.role,
+    content: message.content,
+    sources: message.citations,
+  }));
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-10">
@@ -105,6 +116,7 @@ export default async function NotebookPage({
         <ChatPanel
           notebookId={notebook.id}
           hasReadySources={sources.some((source) => source.status === "ready")}
+          initialEntries={initialEntries}
         />
       </div>
     </main>

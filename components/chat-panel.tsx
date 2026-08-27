@@ -12,11 +12,12 @@ import { describeSource, usedSources } from "@/lib/chat/citations";
 /**
  * Der Chat eines Notebooks.
  *
- * Der Verlauf lebt bewusst nur im Browser: es gibt keine messages-Tabelle,
- * und ein Reload beginnt ein neues Gespraech. Eine bewusste Demo-Entscheidung.
+ * Der Verlauf kommt vom Server und wird dort auch fortgeschrieben. Der
+ * Browser haelt ihn nur, solange die Seite offen ist, und schickt bei einer
+ * neuen Frage ausschliesslich diese - alles andere weiss der Server besser.
  */
 
-type ChatEntry = {
+export type ChatEntry = {
   role: "user" | "assistant";
   content: string;
   sources?: ChatSource[];
@@ -57,11 +58,14 @@ function SourceList({
 export function ChatPanel({
   notebookId,
   hasReadySources,
+  initialEntries,
 }: {
   notebookId: string;
   hasReadySources: boolean;
+  /** Der gespeicherte Verlauf, vom Server geladen. */
+  initialEntries: ChatEntry[];
 }) {
-  const [entries, setEntries] = useState<ChatEntry[]>([]);
+  const [entries, setEntries] = useState<ChatEntry[]>(initialEntries);
   const [frage, setFrage] = useState("");
   const [laeuft, setLaeuft] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
@@ -103,13 +107,8 @@ export function ChatPanel({
         method: "POST",
         headers: { "content-type": "application/json" },
         signal: controller.signal,
-        body: JSON.stringify({
-          notebookId,
-          // Die leere Antwort am Ende gehoert nicht in die Anfrage.
-          messages: verlauf
-            .slice(0, -1)
-            .map(({ role, content }) => ({ role, content })),
-        }),
+        // Nur die Frage: den Verlauf kennt der Server aus der Datenbank.
+        body: JSON.stringify({ notebookId, question: text }),
       });
 
       if (!response.ok || !response.body) {
