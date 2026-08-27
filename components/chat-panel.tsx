@@ -57,13 +57,16 @@ function SourceList({
   );
 }
 
+/** Warum gerade nicht gefragt werden kann - oder null, wenn es geht. */
+export type ChatBlocker = "keine-quellen" | "keine-auswahl" | null;
+
 export function ChatPanel({
   notebookId,
-  hasReadySources,
+  blocker,
   initialEntries,
 }: {
   notebookId: string;
-  hasReadySources: boolean;
+  blocker: ChatBlocker;
   /** Der gespeicherte Verlauf, vom Server geladen. */
   initialEntries: ChatEntry[];
 }) {
@@ -73,6 +76,8 @@ export function ChatPanel({
   const [fehler, setFehler] = useState<string | null>(null);
   /** Die gerade geoeffnete Belegstelle, null wenn keine offen ist. */
   const [beleg, setBeleg] = useState<ChatSource | null>(null);
+
+  const kannFragen = blocker === null;
 
   const abbruch = useRef<AbortController | null>(null);
   const ende = useRef<HTMLDivElement | null>(null);
@@ -201,9 +206,11 @@ export function ChatPanel({
           <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
             <p className="text-sm font-medium">Frag deine Quellen</p>
             <p className="mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
-              {hasReadySources
+              {blocker === null
                 ? "Jede Antwort verweist mit Nummern auf die Abschnitte, aus denen sie stammt."
-                : "Sobald eine Quelle verarbeitet ist, kannst du hier Fragen stellen."}
+                : blocker === "keine-auswahl"
+                  ? "Waehl links mindestens eine Quelle aus, dann kannst du Fragen stellen."
+                  : "Sobald eine Quelle verarbeitet ist, kannst du hier Fragen stellen."}
             </p>
           </div>
         ) : (
@@ -264,17 +271,19 @@ export function ChatPanel({
           value={frage}
           onChange={(event) => setFrage(event.target.value)}
           placeholder={
-            hasReadySources
+            blocker === null
               ? "Frag etwas zu deinen Quellen"
-              : "Erst eine Quelle hinzufuegen"
+              : blocker === "keine-auswahl"
+                ? "Erst eine Quelle auswaehlen"
+                : "Erst eine Quelle hinzufuegen"
           }
           aria-label="Frage an die Quellen"
-          disabled={!hasReadySources || laeuft}
+          disabled={!kannFragen || laeuft}
           className="flex-1 rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm outline-none transition placeholder:text-neutral-400 focus:border-neutral-500 disabled:opacity-60 dark:border-neutral-700 dark:placeholder:text-neutral-600 dark:focus:border-neutral-500"
         />
         <button
           type="submit"
-          disabled={!hasReadySources || laeuft || frage.trim().length === 0}
+          disabled={!kannFragen || laeuft || frage.trim().length === 0}
           className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-50 transition hover:bg-neutral-700 disabled:opacity-60 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
         >
           {laeuft ? "Antwortet ..." : "Fragen"}
