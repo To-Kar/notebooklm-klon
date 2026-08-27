@@ -35,9 +35,12 @@ const statusClass: Record<SourceStatus, string> = {
 export function SourceStatusBadge({
   sourceId,
   status,
+  storedError,
 }: {
   sourceId: string;
   status: SourceStatus;
+  /** Grund des letzten Fehlversuchs aus der Datenbank. */
+  storedError: string | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -77,6 +80,13 @@ export function SourceStatusBadge({
   const angezeigterStatus: SourceStatus =
     isPending && status === "pending" ? "processing" : status;
 
+  /**
+   * Die Meldung des laufenden Versuchs hat Vorrang vor der gespeicherten.
+   * Wer gerade auf "Erneut versuchen" gedrueckt hat, will sehen, woran es
+   * DIESES Mal lag - nicht, woran es beim letzten Mal lag.
+   */
+  const angezeigterFehler = error ?? (status === "error" ? storedError : null);
+
   return (
     <>
       <span className={statusClass[angezeigterStatus]}>
@@ -93,9 +103,9 @@ export function SourceStatusBadge({
         </button>
       ) : null}
 
-      {error ? (
+      {angezeigterFehler ? (
         <span role="alert" className="basis-full text-red-600 dark:text-red-400">
-          {error}
+          {angezeigterFehler}
         </span>
       ) : null}
     </>

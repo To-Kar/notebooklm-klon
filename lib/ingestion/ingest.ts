@@ -1,5 +1,5 @@
 import { embedDocuments } from "@/lib/embeddings";
-import type { Source } from "@/lib/sources";
+import { SOURCE_COLUMNS, type Source } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
 import { MAX_CHUNKS_PER_SOURCE, chunkSegments } from "./chunk";
@@ -10,9 +10,6 @@ import { ExtractionError, extractSourceSegments } from "./extract";
  *
  * WICHTIG: Nur aus Server-Code importieren.
  */
-
-const SOURCE_COLUMNS =
-  "id, notebook_id, title, type, status, storage_path, url, created_at";
 
 /** Wie viele Chunkzeilen pro Insert. Ein Vektor sind 1536 Zahlen. */
 const INSERT_BATCH_SIZE = 50;
@@ -36,7 +33,10 @@ async function claimSource(sourceId: string): Promise<Source | null> {
 
   const { data, error } = await supabase
     .from("sources")
-    .update({ status: "processing" })
+    // Die Meldung des letzten Versuchs faellt mit weg: sie gehoert zu einem
+    // Lauf, der vorbei ist, und das Constraint erlaubt sie ohnehin nur bei
+    // status = 'error'.
+    .update({ status: "processing", error_message: null })
     .eq("id", sourceId)
     .in("status", ["pending", "error"])
     .select(SOURCE_COLUMNS)
@@ -52,12 +52,13 @@ async function claimSource(sourceId: string): Promise<Source | null> {
 async function setStatus(
   sourceId: string,
   status: Source["status"],
+  errorMessage: string | null = null,
 ): Promise<void> {
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from("sources")
-    .update({ status })
+    .update({ status, error_message: errorMessage })
     .eq("id", sourceId);
 
   if (error) {
@@ -150,7 +151,6 @@ export async function ingestSource(sourceId: string): Promise<IngestResult> {
 
     return { outcome: "ready", chunkCount: chunks.length };
   } catch (error) {
-    await setStatus(source.id, "error");
     console.error(`Ingestion von Quelle ${source.id} fehlgeschlagen:`, error);
 
     // Erwartete Fehler tragen eine Meldung, die dem Nutzer weiterhilft.
@@ -158,12 +158,16 @@ export async function ingestSource(sourceId: string): Promise<IngestResult> {
       error instanceof ExtractionError ||
       (error instanceof Error && error.name === "RateLimitError");
 
-    return {
-      outcome: "error",
-      message:
-        isExpected && error instanceof Error
-          ? error.message
-          : "Die Quelle konnte nicht verarbeitet werden.",
-    };
+    const message =
+      isExpected && error instanceof Error
+        ? error.message
+        : "Die Quelle konnte nicht verarbeitet werden.";
+
+    // Die Meldung wandert in die Zeile, damit sie einen Reload ueberlebt.
+    // Vorher lebte sie nur im Browser, und wer die Seite neu lud, sah
+    // "Fehler" ohne jeden Hinweis, woran es lag.
+    await setStatus(source.id, "error", message);
+
+    return { outcome: "error", message };
   }
 }

@@ -33,7 +33,11 @@ function SourceItem({ source }: { source: Source }) {
           {SOURCE_TYPE_LABELS[source.type]}
         </span>
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
-        <SourceStatusBadge sourceId={source.id} status={source.status} />
+        <SourceStatusBadge
+          sourceId={source.id}
+          status={source.status}
+          storedError={source.error_message}
+        />
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
         <DeleteSourceButton sourceId={source.id} />
       </p>
