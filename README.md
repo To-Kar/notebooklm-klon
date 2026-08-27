@@ -5,10 +5,19 @@ Notebook anlegen, Quellen hochladen (PDF, Textdatei, URL), Fragen stellen —
 **und jede Aussage der Antwort zurueckverfolgen bis zur Textstelle, aus der sie
 stammt.**
 
+**Live: https://notebooklm-klon-to-kar.vercel.app**
+
 ![Chat mit aufgeklappter Belegstelle](docs/screenshot-chat.png)
 
 > Bewerbungsaufgabe. Der Fokus liegt auf dem Kern des Produkts und auf
 > nachvollziehbaren Entscheidungen, nicht auf Funktionsfuelle.
+
+> **Zur Live-Demo:** Notebooks, Quellen und gespeicherte Gespraeche lassen sich
+> jederzeit ansehen. Das Stellen *neuer* Fragen haengt am kostenlosen
+> Kontingent des Anbieters — **20 Anfragen pro Tag fuer das gesamte Projekt**.
+> Ist es aufgebraucht, meldet der Chat das ausdruecklich, statt stumm zu
+> scheitern. Wer die Antwortqualitaet selbst pruefen moechte, startet das
+> Projekt am besten lokal mit einem eigenen Schluessel.
 
 ## Worum es geht
 
@@ -106,7 +115,9 @@ npm run lint
 npm run build
 ```
 
-`http://localhost:3000/api/health` meldet, ob alle Env-Variablen gesetzt sind.
+`http://localhost:3000/api/health` meldet, ob alle sechs Env-Variablen gesetzt
+sind, und nennt die fehlenden beim Namen. Derselbe Endpunkt liegt auf der
+Live-Demo unter `/api/health`.
 
 > **Zur Embedding-Dimension:** `chunks.embedding` und die Signatur von
 > `match_chunks` stehen auf 1536. Wer das Embedding-Modell wechselt, muss beide
