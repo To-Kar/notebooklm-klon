@@ -29,6 +29,15 @@ export const maxDuration = 60;
 const MAX_QUESTION_LENGTH = 2000;
 
 /**
+ * Kennzeichnung einer abgebrochenen Antwort.
+ *
+ * Steht im Text statt in einer eigenen Spalte: eine Migration fuer ein
+ * Merkmal, das der Nutzer ohnehin lesen soll, waere zu viel Aufwand fuer zu
+ * wenig Gewinn.
+ */
+const ABORTED_SUFFIX = "\n\n(Antwort abgebrochen.)";
+
+/**
  * Was ueber die Leitung geht: eine JSON-Zeile je Ereignis.
  *
  * Reiner Text waere einfacher, koennte aber nur die Antwort tragen. Die
@@ -243,15 +252,23 @@ export async function POST(request: Request) {
           usedSources(antwort, sources),
         );
       } catch (error) {
-        // Bricht der Browser ab, ist das kein Fehler. Was bis dahin kam,
-        // wird trotzdem gesichert: der Nutzer hat es gelesen, und ein
-        // Verlauf, der es verschweigt, waere gelogen.
+        /**
+         * Bricht der Browser ab, ist das kein Fehler. Was bis dahin kam,
+         * wird gesichert - der Nutzer hat es gelesen, und ein Verlauf, der
+         * es verschweigt, waere gelogen.
+         *
+         * Aber es wird als Torso gekennzeichnet. Ohne die Markierung sieht
+         * ein abgebrochener Halbsatz wie eine sehr knappe Antwort aus, und
+         * niemand kann unterscheiden, ob das Modell wenig zu sagen hatte
+         * oder ob die Verbindung wegbrach. Ein Druck auf Escape reicht dafuer:
+         * der Browser stoppt damit laufende Anfragen.
+         */
         if (request.signal.aborted) {
           if (antwort.length > 0) {
             await appendMessage(
               notebook.id,
               "assistant",
-              antwort,
+              `${antwort}${ABORTED_SUFFIX}`,
               usedSources(antwort, sources),
             ).catch((fehler) =>
               console.error("Teilantwort nicht gespeichert:", fehler),
