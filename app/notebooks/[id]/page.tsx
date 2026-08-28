@@ -16,6 +16,7 @@ import {
   SourceCheckbox,
 } from "@/components/source-selection";
 import { SourceStatusBadge } from "@/components/source-status";
+import { SourceSummary } from "@/components/source-summary";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
 import { listMessages } from "@/lib/messages";
@@ -65,6 +66,10 @@ function SourceItem({ source }: { source: Source }) {
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
         <DeleteSourceButton sourceId={source.id} />
       </p>
+
+      {source.summary ? (
+        <SourceSummary summary={source.summary} topics={source.topics} />
+      ) : null}
       </div>
     </li>
   );
