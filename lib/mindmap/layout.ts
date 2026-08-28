@@ -46,8 +46,15 @@ export type Layout = {
 };
 
 /** Masse in Bildpunkten. Bewusst hier und nicht im CSS: sie gehen in die Rechnung ein. */
-const NODE_WIDTH = [190, 170, 160] as const;
-const NODE_HEIGHT = 44;
+const NODE_WIDTH = [200, 180, 170] as const;
+/**
+ * Platz fuer zwei Zeilen Beschriftung und darunter die Belegnummern.
+ *
+ * Im Browser nachgemessen: zwei Zeilen 28, Belegnummern 14, Abstand und
+ * Innenabstand 16. Bei 56 drueckt die Flexbox die Beschriftung auf eine Zeile
+ * zusammen, und jede zweite Bezeichnung war abgeschnitten.
+ */
+const NODE_HEIGHT = 64;
 /** Senkrechter Abstand zwischen zwei Knoten derselben Ebene. */
 const ROW_GAP = 14;
 /** Waagerechter Abstand zwischen den Ebenen. */

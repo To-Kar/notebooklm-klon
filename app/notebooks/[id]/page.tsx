@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
 import type { ChatBlocker, ChatEntry } from "@/components/chat-panel";
-import { Workspace, type AudioState } from "@/components/workspace";
+import {
+  Workspace,
+  type AudioState,
+  type MindmapState,
+} from "@/components/workspace";
 import {
   DeleteNotebookButton,
   DeleteSourceButton,
@@ -18,6 +22,7 @@ import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
 import { listMessages } from "@/lib/messages";
 import { getAudioOverview } from "@/lib/audio/store";
+import { getMindmap } from "@/lib/mindmap/store";
 import { listNotes } from "@/lib/notes";
 import { listSources, type Source } from "@/lib/sources";
 
@@ -85,12 +90,14 @@ export default async function NotebookPage({
   }
 
   // Quellen und Verlauf zusammen holen, nicht nacheinander.
-  const [sources, messages, notes, audioOverview] = await Promise.all([
-    listSources(notebook.id),
-    listMessages(notebook.id),
-    listNotes(notebook.id),
-    getAudioOverview(notebook.id),
-  ]);
+  const [sources, messages, notes, audioOverview, mindmapRow] =
+    await Promise.all([
+      listSources(notebook.id),
+      listMessages(notebook.id),
+      listNotes(notebook.id),
+      getAudioOverview(notebook.id),
+      getMindmap(notebook.id),
+    ]);
 
   // Zwischen "keine Quellen" und "keine ausgewaehlt" unterscheiden - sonst
   // schickt die Meldung den Nutzer in die falsche Richtung.
@@ -109,6 +116,13 @@ export default async function NotebookPage({
     error: audioOverview?.error_message ?? null,
     // Dieselbe Bedingung wie beim Chat: ohne ausgewaehlte, verarbeitete
     // Quelle gibt es nichts zu besprechen.
+    canGenerate: blocker === null,
+  };
+
+  const mindmap: MindmapState = {
+    status: mindmapRow?.status ?? null,
+    data: mindmapRow?.data ?? null,
+    error: mindmapRow?.error_message ?? null,
     canGenerate: blocker === null,
   };
 
@@ -170,13 +184,13 @@ export default async function NotebookPage({
           )}
         </aside>
 
-        {/* Klickbare Zitate folgen in Arbeitspaket 5. */}
         <Workspace
           notebookId={notebook.id}
           blocker={blocker}
           initialEntries={initialEntries}
           notes={notes}
           audio={audio}
+          mindmap={mindmap}
         />
       </div>
     </main>

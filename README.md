@@ -51,6 +51,7 @@ raet, ist schlimmer als keiner.
 | Verlauf | wird gespeichert, ueberlebt einen Reload, laesst sich leeren |
 | Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
 | Audio | gesprochene Zusammenfassung der ausgewaehlten Quellen, zwei Stimmen, rund 30 Sekunden |
+| Karte | Themenlandkarte der ausgewaehlten Quellen; jeder Knoten belegt sich und fuehrt in denselben Belegdialog |
 
 ## Stack
 
@@ -89,7 +90,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle neun, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle zehn, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -103,6 +104,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0007_source_summary.sql` | Kurzfassung und Kernthemen je Quelle |
 | `0008_notes.sql` | Notizen |
 | `0009_audio_overview.sql` | Gesprochene Zusammenfassung und ihr Bucket |
+| `0010_mindmap.sql` | Themenlandkarte |
 
 **Env-Variablen:**
 
@@ -239,7 +241,8 @@ Erfolge auflistet, sagt wenig darueber, wie sorgfaeltig geprueft wurde.
 - **Auth und Multi-User.** Fuer eine Demo unnoetig, wuerde nur Zeit kosten.
 - **Sehr grosse Dokumente.** Die Ingestion ist auf demo-taugliche Groessen
   ausgelegt, damit sie in die Laufzeitgrenzen einer Serverless-Function passt.
-- **Studio-Features** (Audio Overview, Mindmap, Video). Der Kern hat Vorrang.
+- **Video-Overview.** Audio und Themenlandkarte stehen, Video nicht: der Kern
+  hat Vorrang, und bewegtes Bild bringt hier nichts, was die Karte nicht zeigt.
 - **Mehrere Gespraeche je Notebook**, Umbenennen, Export.
 
 ## Bekannte Grenzen

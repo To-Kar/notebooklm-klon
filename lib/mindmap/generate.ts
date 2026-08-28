@@ -135,7 +135,8 @@ export async function collectChunks(
         title: zeile.sources?.title ?? "Unbekannte Quelle",
         page: typeof seite === "number" ? seite : null,
         url: zeile.sources?.url ?? null,
-        similarity: 1,
+        // Kein Suchtreffer, also keine Aehnlichkeit.
+        similarity: null,
         content: zeile.content,
       });
     }

@@ -4,13 +4,15 @@ import { useState } from "react";
 
 import { ChatPanel, type ChatBlocker, type ChatEntry } from "@/components/chat-panel";
 import { AudioPanel } from "@/components/audio-panel";
+import { MindmapPanel } from "@/components/mindmap-panel";
 import { NotesPanel, type NoteEntry } from "@/components/notes-panel";
 import type { AudioStatus } from "@/lib/audio/store";
+import type { MindmapData, MindmapStatus } from "@/lib/mindmap/store";
 
 /**
- * Die rechte Spalte: Chat oder Notizen.
+ * Die rechte Spalte: Chat, Notizen, Audio oder Karte.
  *
- * Ein Umschalter statt einer dritten Spalte. Bei 20rem Seitenleiste waere die
+ * Ein Umschalter statt weiterer Spalten. Bei 20rem Seitenleiste waere eine
  * dritte Spalte zu schmal fuer Notizen mit Belegen - und NotebookLM trennt
  * Chat und Studio ebenfalls, statt beides nebeneinanderzuquetschen.
  */
@@ -22,20 +24,31 @@ export type AudioState = {
   canGenerate: boolean;
 };
 
+export type MindmapState = {
+  status: MindmapStatus | null;
+  data: MindmapData | null;
+  error: string | null;
+  canGenerate: boolean;
+};
+
 export function Workspace({
   notebookId,
   blocker,
   initialEntries,
   notes,
   audio,
+  mindmap,
 }: {
   notebookId: string;
   blocker: ChatBlocker;
   initialEntries: ChatEntry[];
   notes: NoteEntry[];
   audio: AudioState;
+  mindmap: MindmapState;
 }) {
-  const [ansicht, setAnsicht] = useState<"chat" | "notizen" | "audio">("chat");
+  const [ansicht, setAnsicht] = useState<
+    "chat" | "notizen" | "audio" | "karte"
+  >("chat");
 
   const reiterClass = (aktiv: boolean) =>
     `rounded-lg px-3 py-1.5 text-sm transition ${
@@ -46,7 +59,11 @@ export function Workspace({
 
   return (
     <div className="space-y-3">
-      <div role="tablist" aria-label="Chat oder Notizen" className="flex gap-1">
+      <div
+        role="tablist"
+        aria-label="Chat, Notizen, Audio oder Karte"
+        className="flex gap-1"
+      >
         <button
           type="button"
           role="tab"
@@ -76,6 +93,16 @@ export function Workspace({
         >
           Audio
         </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={ansicht === "karte"}
+          onClick={() => setAnsicht("karte")}
+          className={reiterClass(ansicht === "karte")}
+        >
+          Karte
+        </button>
       </div>
 
       {/*
@@ -103,6 +130,16 @@ export function Workspace({
           durationSeconds={audio.durationSeconds}
           storedError={audio.error}
           canGenerate={audio.canGenerate}
+        />
+      </div>
+
+      <div hidden={ansicht !== "karte"}>
+        <MindmapPanel
+          notebookId={notebookId}
+          status={mindmap.status}
+          data={mindmap.data}
+          storedError={mindmap.error}
+          canGenerate={mindmap.canGenerate}
         />
       </div>
     </div>
