@@ -43,7 +43,7 @@ raet, ist schlimmer als keiner.
 | Bereich | Was |
 | --- | --- |
 | Notebooks | anlegen, auflisten, oeffnen, loeschen |
-| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, loeschen |
+| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwaehlen, loeschen |
 | Ingestion | Parsen, Chunking mit Herkunftsangabe, Embedding, Statuspflege |
 | Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
 | Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
@@ -86,7 +86,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle fuenf, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle sechs, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -96,6 +96,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0003_sources.sql` | URL-Spalte, Constraint, Storage-Bucket |
 | `0004_source_error.sql` | Fehlergrund einer Quelle |
 | `0005_messages.sql` | Chatverlauf |
+| `0006_source_selection.sql` | Quellenauswahl und gefiltertes Retrieval |
 
 **Env-Variablen:**
 
@@ -132,6 +133,13 @@ Die ausfuehrlichen Begruendungen stehen in den Pull Requests. Die wichtigsten:
 **Der Browser spricht nie mit Supabase.** Alle Zugriffe laufen serverseitig, der
 Secret-Key bleibt auf dem Server. Rechte hat ausschliesslich `service_role`;
 `anon` bekommt bewusst keine, obwohl der Publishable Key im Client-Bundle liegt.
+
+**Quellen lassen sich abwaehlen, und gefiltert wird in der Datenbank.** Ohne
+Einschraenkung verdraengt eine grosse Quelle eine kleine: gemessen an einem
+Notebook mit 19 Chunks aus einem Artikel und 3 aus einem PDF war unter den
+besten acht Treffern kein einziger aus dem PDF — die Frage nach dem PDF-Inhalt
+blieb unbeantwortet. Nachtraeglich im Anwendungscode zu filtern haette in genau
+diesem Fall nichts uebrig gelassen.
 
 **Ein Chunk gehoert immer zu genau einer Seite.** Ueber Seitengrenzen hinweg zu
 buendeln waere effizienter, wuerde aber die Seitenzahl im Zitat zur Luege machen.
