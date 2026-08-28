@@ -1,6 +1,7 @@
 import { streamAnswer, type ChatMessage } from "@/lib/chat/llm";
 import {
   NO_CONTEXT_ANSWER,
+  NO_SELECTION_ANSWER,
   buildSystemPrompt,
   hasUsableContext,
 } from "@/lib/chat/prompt";
@@ -14,6 +15,7 @@ import {
 } from "@/lib/messages";
 import { getNotebook } from "@/lib/notebooks";
 import type { SourceType } from "@/lib/source-limits";
+import { listSelectedSourceIds } from "@/lib/sources";
 
 /**
  * Chat-Endpunkt.
@@ -124,6 +126,26 @@ function readRequestBody(body: unknown):
   };
 }
 
+/**
+ * Eine feste Antwort im selben Format wie eine gestreamte.
+ *
+ * Der Browser soll nicht zwei Faelle unterscheiden muessen: eine Absage ist
+ * eine Antwort, nur eben ohne Belege und ohne Modell.
+ */
+function antwortStrom(text: string): Response {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encodeEvent({ type: "sources", sources: [] }));
+      controller.enqueue(encodeEvent({ type: "delta", text }));
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: { "content-type": "application/x-ndjson; charset=utf-8" },
+  });
+}
+
 export async function POST(request: Request) {
   let parsedBody: unknown;
 
@@ -190,9 +212,26 @@ export async function POST(request: Request) {
   // braucht einen eigenstaendigen Text, das Modell den Gespraechsfaden.
   const searchQuery = await buildSearchQuery(messages, request.signal);
 
+  // Nur ausgewaehlte und fertig verarbeitete Quellen kommen in Frage.
+  let sourceIds: string[];
+  try {
+    sourceIds = await listSelectedSourceIds(notebook.id);
+  } catch (error) {
+    console.error("Auswahl konnte nicht geladen werden:", error);
+    return Response.json(
+      { message: "Die Quellenauswahl konnte nicht geladen werden." },
+      { status: 502 },
+    );
+  }
+
+  if (sourceIds.length === 0) {
+    await appendMessage(notebook.id, "assistant", NO_SELECTION_ANSWER);
+    return antwortStrom(NO_SELECTION_ANSWER);
+  }
+
   let chunks: RetrievedChunk[];
   try {
-    chunks = await retrieveChunks(notebook.id, searchQuery);
+    chunks = await retrieveChunks(notebook.id, searchQuery, sourceIds);
   } catch (error) {
     console.error("Retrieval fehlgeschlagen:", error);
     return Response.json(
@@ -206,20 +245,7 @@ export async function POST(request: Request) {
     // Auch die Absage ist eine Antwort und gehoert in den Verlauf - sonst
     // stuende dort eine Frage, auf die scheinbar nie jemand reagiert hat.
     await appendMessage(notebook.id, "assistant", NO_CONTEXT_ANSWER);
-
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encodeEvent({ type: "sources", sources: [] }));
-        controller.enqueue(
-          encodeEvent({ type: "delta", text: NO_CONTEXT_ANSWER }),
-        );
-        controller.close();
-      },
-    });
-
-    return new Response(stream, {
-      headers: { "content-type": "application/x-ndjson; charset=utf-8" },
-    });
+    return antwortStrom(NO_CONTEXT_ANSWER);
   }
 
   const systemPrompt = buildSystemPrompt(chunks);

@@ -28,6 +28,8 @@ export type Source = {
   url: string | null;
   /** Grund des letzten Fehlversuchs, nur bei status === 'error' gesetzt. */
   error_message: string | null;
+  /** Wird diese Quelle bei Fragen beruecksichtigt? */
+  selected: boolean;
   created_at: string;
 };
 
@@ -39,7 +41,7 @@ export type Source = {
  * erst auf, wenn irgendwo ein Feld fehlt.
  */
 export const SOURCE_COLUMNS =
-  "id, notebook_id, title, type, status, storage_path, url, error_message, created_at";
+  "id, notebook_id, title, type, status, storage_path, url, error_message, selected, created_at";
 
 /**
  * Die Anzeigetexte liegen in lib/source-limits.ts, weil auch
@@ -158,6 +160,65 @@ export async function listSourceFilePaths(
   return ((data ?? []) as { storage_path: string | null }[])
     .map((row) => row.storage_path)
     .filter((path): path is string => path !== null);
+}
+
+/** Waehlt eine Quelle an oder ab. */
+export async function setSourceSelected(
+  id: string,
+  selected: boolean,
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ selected })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Auswahl konnte nicht gespeichert werden: ${error.message}`);
+  }
+}
+
+/** Setzt die Auswahl fuer alle Quellen eines Notebooks auf denselben Wert. */
+export async function setAllSourcesSelected(
+  notebookId: string,
+  selected: boolean,
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ selected })
+    .eq("notebook_id", notebookId);
+
+  if (error) {
+    throw new Error(`Auswahl konnte nicht gespeichert werden: ${error.message}`);
+  }
+}
+
+/**
+ * Die ids der Quellen, die bei einer Frage beruecksichtigt werden.
+ *
+ * Nur fertig verarbeitete Quellen zaehlen: eine ausgewaehlte Quelle ohne
+ * Chunks traegt nichts bei, wuerde die Liste aber unnoetig aufblaehen.
+ */
+export async function listSelectedSourceIds(
+  notebookId: string,
+): Promise<string[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("sources")
+    .select("id")
+    .eq("notebook_id", notebookId)
+    .eq("selected", true)
+    .eq("status", "ready");
+
+  if (error) {
+    throw new Error(`Auswahl konnte nicht geladen werden: ${error.message}`);
+  }
+
+  return ((data ?? []) as { id: string }[]).map((row) => row.id);
 }
 
 /** Schneidet einen Titel auf die erlaubte Laenge und entfernt Leerraum. */

@@ -2,11 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
-import { ChatPanel, type ChatEntry } from "@/components/chat-panel";
+import {
+  ChatPanel,
+  type ChatBlocker,
+  type ChatEntry,
+} from "@/components/chat-panel";
 import {
   DeleteNotebookButton,
   DeleteSourceButton,
 } from "@/components/delete-controls";
+import {
+  SelectAllSources,
+  SourceCheckbox,
+} from "@/components/source-selection";
 import { SourceStatusBadge } from "@/components/source-status";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
@@ -25,7 +33,22 @@ export const maxDuration = 60;
 
 function SourceItem({ source }: { source: Source }) {
   return (
-    <li className="rounded-lg border border-neutral-200 px-3 py-2 dark:border-neutral-800">
+    <li
+      className={`flex gap-2 rounded-lg border px-3 py-2 transition ${
+        source.selected
+          ? "border-neutral-200 dark:border-neutral-800"
+          : // Abgewaehlte Quellen bleiben sichtbar, treten aber zurueck.
+            "border-neutral-200/60 opacity-55 dark:border-neutral-800/60"
+      }`}
+    >
+      <SourceCheckbox
+        sourceId={source.id}
+        selected={source.selected}
+        title={source.title}
+        disabled={source.status !== "ready"}
+      />
+
+      <div className="min-w-0 flex-1">
       <p className="truncate text-sm font-medium" title={source.title}>
         {source.title}
       </p>
@@ -42,6 +65,7 @@ function SourceItem({ source }: { source: Source }) {
         <span className="text-neutral-300 dark:text-neutral-700">/</span>
         <DeleteSourceButton sourceId={source.id} />
       </p>
+      </div>
     </li>
   );
 }
@@ -61,6 +85,16 @@ export default async function NotebookPage({
     listSources(notebook.id),
     listMessages(notebook.id),
   ]);
+
+  // Zwischen "keine Quellen" und "keine ausgewaehlt" unterscheiden - sonst
+  // schickt die Meldung den Nutzer in die falsche Richtung.
+  const verarbeitete = sources.filter((source) => source.status === "ready");
+  const blocker: ChatBlocker =
+    verarbeitete.length === 0
+      ? "keine-quellen"
+      : verarbeitete.some((source) => source.selected)
+        ? null
+        : "keine-auswahl";
 
   const initialEntries: ChatEntry[] = messages.map((message) => ({
     role: message.role,
@@ -95,7 +129,15 @@ export default async function NotebookPage({
 
       <div className="mt-8 grid gap-6 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
         <aside className="space-y-5">
-          <h2 className="text-sm font-semibold">Quellen</h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 className="text-sm font-semibold">Quellen</h2>
+            {sources.length > 0 ? (
+              <SelectAllSources
+                notebookId={notebook.id}
+                alleAusgewaehlt={sources.every((source) => source.selected)}
+              />
+            ) : null}
+          </div>
 
           <AddSourceForm notebookId={notebook.id} />
 
@@ -115,7 +157,7 @@ export default async function NotebookPage({
         {/* Klickbare Zitate folgen in Arbeitspaket 5. */}
         <ChatPanel
           notebookId={notebook.id}
-          hasReadySources={sources.some((source) => source.status === "ready")}
+          blocker={blocker}
           initialEntries={initialEntries}
         />
       </div>
