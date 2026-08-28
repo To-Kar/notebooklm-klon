@@ -2,11 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
-import {
-  ChatPanel,
-  type ChatBlocker,
-  type ChatEntry,
-} from "@/components/chat-panel";
+import type { ChatBlocker, ChatEntry } from "@/components/chat-panel";
+import { Workspace } from "@/components/workspace";
 import {
   DeleteNotebookButton,
   DeleteSourceButton,
@@ -20,6 +17,7 @@ import { SourceSummary } from "@/components/source-summary";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
 import { listMessages } from "@/lib/messages";
+import { listNotes } from "@/lib/notes";
 import { listSources, type Source } from "@/lib/sources";
 
 /** Wie auf der Startseite: der Stand kommt aus der DB, nicht aus dem Build. */
@@ -86,9 +84,10 @@ export default async function NotebookPage({
   }
 
   // Quellen und Verlauf zusammen holen, nicht nacheinander.
-  const [sources, messages] = await Promise.all([
+  const [sources, messages, notes] = await Promise.all([
     listSources(notebook.id),
     listMessages(notebook.id),
+    listNotes(notebook.id),
   ]);
 
   // Zwischen "keine Quellen" und "keine ausgewaehlt" unterscheiden - sonst
@@ -160,10 +159,11 @@ export default async function NotebookPage({
         </aside>
 
         {/* Klickbare Zitate folgen in Arbeitspaket 5. */}
-        <ChatPanel
+        <Workspace
           notebookId={notebook.id}
           blocker={blocker}
           initialEntries={initialEntries}
+          notes={notes}
         />
       </div>
     </main>
