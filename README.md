@@ -50,6 +50,7 @@ raet, ist schlimmer als keiner.
 | Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
 | Verlauf | wird gespeichert, ueberlebt einen Reload, laesst sich leeren |
 | Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
+| Audio | gesprochene Zusammenfassung der ausgewaehlten Quellen, zwei Stimmen, rund 30 Sekunden |
 
 ## Stack
 
@@ -88,7 +89,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle acht, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle neun, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -101,6 +102,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0006_source_selection.sql` | Quellenauswahl und gefiltertes Retrieval |
 | `0007_source_summary.sql` | Kurzfassung und Kernthemen je Quelle |
 | `0008_notes.sql` | Notizen |
+| `0009_audio_overview.sql` | Gesprochene Zusammenfassung und ihr Bucket |
 
 **Env-Variablen:**
 
@@ -112,6 +114,7 @@ Supabase-SQL-Editor oder per CLI:
 | `LLM_API_KEY` | [aistudio.google.com](https://aistudio.google.com/apikey) |
 | `LLM_MODEL` | z. B. `gemini-3.5-flash` |
 | `EMBEDDING_MODEL` | `gemini-embedding-001` |
+| `SPEECH_MODEL` | optional, Standard `gemini-2.5-flash-preview-tts` |
 
 ```bash
 npm run dev     # http://localhost:3000
@@ -248,5 +251,10 @@ Erfolge auflistet, sagt wenig darueber, wie sorgfaeltig geprueft wurde.
   Gegenrichtung koennte eine Folgefrage ungeloest in die Suche schicken.
 - **Kein Volltextindex neben der Vektorsuche.** Bei Eigennamen und Zahlen waere
   eine hybride Suche besser.
+- **Die gesprochene Zusammenfassung dauert rund 30 Sekunden**, kein
+  mehrminuetiger Podcast. Skript und Sprachausgabe laufen in einer
+  Serverless-Function mit 60 Sekunden Grenze; gemessen braucht die
+  Sprachausgabe 0,76 Sekunden je Sekunde Audio. Fuer mehr braeuchte es eine
+  Aufteilung in Abschnitte mit eigener Zustandsverwaltung.
 - **Der Fehlergrund einer Quelle haelt nur den letzten Versuch fest**, keine
   Historie.

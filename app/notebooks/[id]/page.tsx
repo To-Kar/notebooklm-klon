@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AddSourceForm } from "@/components/add-source-form";
 import type { ChatBlocker, ChatEntry } from "@/components/chat-panel";
-import { Workspace } from "@/components/workspace";
+import { Workspace, type AudioState } from "@/components/workspace";
 import {
   DeleteNotebookButton,
   DeleteSourceButton,
@@ -17,6 +17,7 @@ import { SourceSummary } from "@/components/source-summary";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
 import { listMessages } from "@/lib/messages";
+import { getAudioOverview } from "@/lib/audio/store";
 import { listNotes } from "@/lib/notes";
 import { listSources, type Source } from "@/lib/sources";
 
@@ -84,10 +85,11 @@ export default async function NotebookPage({
   }
 
   // Quellen und Verlauf zusammen holen, nicht nacheinander.
-  const [sources, messages, notes] = await Promise.all([
+  const [sources, messages, notes, audioOverview] = await Promise.all([
     listSources(notebook.id),
     listMessages(notebook.id),
     listNotes(notebook.id),
+    getAudioOverview(notebook.id),
   ]);
 
   // Zwischen "keine Quellen" und "keine ausgewaehlt" unterscheiden - sonst
@@ -99,6 +101,16 @@ export default async function NotebookPage({
       : verarbeitete.some((source) => source.selected)
         ? null
         : "keine-auswahl";
+
+  const audio: AudioState = {
+    status: audioOverview?.status ?? null,
+    script: audioOverview?.script ?? null,
+    durationSeconds: audioOverview?.duration_seconds ?? null,
+    error: audioOverview?.error_message ?? null,
+    // Dieselbe Bedingung wie beim Chat: ohne ausgewaehlte, verarbeitete
+    // Quelle gibt es nichts zu besprechen.
+    canGenerate: blocker === null,
+  };
 
   const initialEntries: ChatEntry[] = messages.map((message) => ({
     role: message.role,
@@ -164,6 +176,7 @@ export default async function NotebookPage({
           blocker={blocker}
           initialEntries={initialEntries}
           notes={notes}
+          audio={audio}
         />
       </div>
     </main>

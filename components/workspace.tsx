@@ -3,7 +3,9 @@
 import { useState } from "react";
 
 import { ChatPanel, type ChatBlocker, type ChatEntry } from "@/components/chat-panel";
+import { AudioPanel } from "@/components/audio-panel";
 import { NotesPanel, type NoteEntry } from "@/components/notes-panel";
+import type { AudioStatus } from "@/lib/audio/store";
 
 /**
  * Die rechte Spalte: Chat oder Notizen.
@@ -12,18 +14,28 @@ import { NotesPanel, type NoteEntry } from "@/components/notes-panel";
  * dritte Spalte zu schmal fuer Notizen mit Belegen - und NotebookLM trennt
  * Chat und Studio ebenfalls, statt beides nebeneinanderzuquetschen.
  */
+export type AudioState = {
+  status: AudioStatus | null;
+  script: string | null;
+  durationSeconds: number | null;
+  error: string | null;
+  canGenerate: boolean;
+};
+
 export function Workspace({
   notebookId,
   blocker,
   initialEntries,
   notes,
+  audio,
 }: {
   notebookId: string;
   blocker: ChatBlocker;
   initialEntries: ChatEntry[];
   notes: NoteEntry[];
+  audio: AudioState;
 }) {
-  const [ansicht, setAnsicht] = useState<"chat" | "notizen">("chat");
+  const [ansicht, setAnsicht] = useState<"chat" | "notizen" | "audio">("chat");
 
   const reiterClass = (aktiv: boolean) =>
     `rounded-lg px-3 py-1.5 text-sm transition ${
@@ -54,6 +66,16 @@ export function Workspace({
         >
           Notizen{notes.length > 0 ? ` (${notes.length})` : ""}
         </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={ansicht === "audio"}
+          onClick={() => setAnsicht("audio")}
+          className={reiterClass(ansicht === "audio")}
+        >
+          Audio
+        </button>
       </div>
 
       {/*
@@ -71,6 +93,17 @@ export function Workspace({
 
       <div hidden={ansicht !== "notizen"}>
         <NotesPanel notebookId={notebookId} notes={notes} />
+      </div>
+
+      <div hidden={ansicht !== "audio"}>
+        <AudioPanel
+          notebookId={notebookId}
+          status={audio.status}
+          script={audio.script}
+          durationSeconds={audio.durationSeconds}
+          storedError={audio.error}
+          canGenerate={audio.canGenerate}
+        />
       </div>
     </div>
   );
