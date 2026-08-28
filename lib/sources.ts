@@ -8,6 +8,7 @@ import {
   isAllowedSourceMimeType,
 } from "@/lib/source-limits";
 import { createAdminClient } from "@/lib/supabase/server";
+import { checkTitle } from "@/lib/title";
 
 /**
  * Datenzugriff fuer Quellen.
@@ -191,6 +192,26 @@ export async function saveSourceSummary(
   }
 }
 
+/** Benennt eine Quelle um. Wirft bei ungueltiger Eingabe oder DB-Fehler. */
+export async function renameSource(id: string, title: string): Promise<void> {
+  const geprueft = checkTitle(title, SOURCE_TITLE_MAX_LENGTH);
+
+  if (!geprueft.ok) {
+    throw new Error(geprueft.reason);
+  }
+
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ title: geprueft.title })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Quelle konnte nicht umbenannt werden: ${error.message}`);
+  }
+}
+
 /** Waehlt eine Quelle an oder ab. */
 export async function setSourceSelected(
   id: string,
@@ -250,7 +271,14 @@ export async function listSelectedSourceIds(
   return ((data ?? []) as { id: string }[]).map((row) => row.id);
 }
 
-/** Schneidet einen Titel auf die erlaubte Laenge und entfernt Leerraum. */
+/**
+ * Schneidet einen Titel auf die erlaubte Laenge und entfernt Leerraum.
+ *
+ * Kuerzt, statt wie checkTitle abzulehnen - und das mit Absicht: hier kommt
+ * der Titel aus einem Dateinamen oder einer URL, nicht aus einem Eingabefeld.
+ * Einen Upload wegen eines langen Dateinamens abzulehnen waere schikanoes;
+ * eine getippte Eingabe stillschweigend zu kuerzen dagegen irrefuehrend.
+ */
 function normalizeTitle(title: string): string {
   return title.trim().slice(0, SOURCE_TITLE_MAX_LENGTH);
 }

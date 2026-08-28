@@ -69,3 +69,29 @@ export function describeSource(source: ChatSource): string {
 
   return `${source.title} (${type}${page})`;
 }
+
+/**
+ * Ersetzt in gespeicherten Belegen den Titel durch den aktuellen.
+ *
+ * Belege werden als Momentaufnahme gespeichert - der woertliche Abschnitt
+ * soll ja genau der bleiben, auf den sich die Antwort berufen hat. Der Titel
+ * gehoert aber nicht dazu: er benennt nur, wo die Stelle steht. Wird eine
+ * Quelle umbenannt, zeigte die Seitenleiste sonst den neuen Namen und jeder
+ * aeltere Beleg den alten - dieselbe Quelle unter zwei Namen, und der Nutzer
+ * kann nicht wissen, welcher gilt.
+ *
+ * Zu einer geloeschten Quelle gibt es keinen aktuellen Titel mehr. Dann
+ * bleibt der gespeicherte stehen: ein alter Name ist besser als gar keiner.
+ */
+export function withCurrentTitles(
+  sources: ChatSource[],
+  titles: Map<string, string>,
+): ChatSource[] {
+  return sources.map((source) => {
+    const aktuell = titles.get(source.sourceId);
+
+    return aktuell === undefined || aktuell === source.title
+      ? source
+      : { ...source, title: aktuell };
+  });
+}
