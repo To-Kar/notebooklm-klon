@@ -49,6 +49,7 @@ raet, ist schlimmer als keiner.
 | Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
 | Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
 | Verlauf | wird gespeichert, ueberlebt einen Reload, laesst sich leeren |
+| Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
 
 ## Stack
 
@@ -87,7 +88,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle sieben, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle acht, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -99,6 +100,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0005_messages.sql` | Chatverlauf |
 | `0006_source_selection.sql` | Quellenauswahl und gefiltertes Retrieval |
 | `0007_source_summary.sql` | Kurzfassung und Kernthemen je Quelle |
+| `0008_notes.sql` | Notizen |
 
 **Env-Variablen:**
 

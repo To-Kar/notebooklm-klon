@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 import type { ChatSource, ChatStreamEvent } from "@/app/api/chat/route";
 import { clearConversationAction } from "@/app/notebooks/conversation-actions";
+import { saveAnswerAsNoteAction } from "@/app/notebooks/note-actions";
 import {
   AnswerWithCitations,
   CitationDialog,
@@ -24,6 +25,70 @@ export type ChatEntry = {
   content: string;
   sources?: ChatSource[];
 };
+
+/**
+ * Sichert eine Antwort als Notiz - mitsamt ihren Belegen.
+ *
+ * Nur die tatsaechlich zitierten, dieselbe Auswahl wie in der Belegliste.
+ * Alle acht Auszuege mitzuspeichern waere Ballast, den niemand liest.
+ */
+function SaveAsNoteButton({
+  notebookId,
+  entry,
+}: {
+  notebookId: string;
+  entry: ChatEntry;
+}) {
+  const [gespeichert, setGespeichert] = useState(false);
+  const [fehler, setFehler] = useState<string | null>(null);
+  const [laeuft, startTransition] = useTransition();
+
+  function speichern() {
+    setFehler(null);
+
+    startTransition(async () => {
+      const ergebnis = await saveAnswerAsNoteAction(
+        notebookId,
+        entry.content,
+        usedSources(entry.content, entry.sources ?? []),
+      );
+
+      if (ergebnis.error) {
+        setFehler(ergebnis.error);
+        return;
+      }
+
+      setGespeichert(true);
+    });
+  }
+
+  if (gespeichert) {
+    return (
+      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+        Als Notiz gespeichert
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={speichern}
+        disabled={laeuft}
+        className="text-xs text-neutral-500 underline underline-offset-2 transition hover:text-neutral-900 disabled:opacity-60 dark:text-neutral-400 dark:hover:text-neutral-100"
+      >
+        {laeuft ? "Wird gespeichert ..." : "Als Notiz speichern"}
+      </button>
+
+      {fehler ? (
+        <span role="alert" className="text-xs text-red-600 dark:text-red-400">
+          {fehler}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 /** Die Belegliste unter einer Antwort. Auch von hier kommt man zur Stelle. */
 function SourceList({
@@ -244,6 +309,10 @@ export function ChatPanel({
 
                 {entry.role === "assistant" ? (
                   <SourceList entry={entry} onSelect={setBeleg} />
+                ) : null}
+
+                {entry.role === "assistant" && entry.content.length > 0 ? (
+                  <SaveAsNoteButton notebookId={notebookId} entry={entry} />
                 ) : null}
               </div>
             </div>
