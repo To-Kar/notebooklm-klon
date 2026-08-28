@@ -156,7 +156,10 @@ export function CitationDialog({
           <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
             {SOURCE_TYPE_LABELS[source.sourceType]}
             {source.page === null ? "" : `, Seite ${source.page}`}
-            {` · Beleg [${source.marker}] · Aehnlichkeit ${source.similarity.toFixed(2)}`}
+            {` · Beleg [${source.marker}]`}
+            {source.similarity === null
+              ? ""
+              : ` · Aehnlichkeit ${source.similarity.toFixed(2)}`}
           </p>
         </div>
 

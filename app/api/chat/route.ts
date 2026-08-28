@@ -62,7 +62,15 @@ export type ChatSource = {
   title: string;
   page: number | null;
   url: string | null;
-  similarity: number;
+  /**
+   * Wie gut der Abschnitt zur Frage passte.
+   *
+   * null, wenn der Beleg nicht aus einer Suche stammt - die Themenlandkarte
+   * ordnet Abschnitte, sie sucht nicht. Dort eine 1,00 anzuzeigen waere eine
+   * erfundene Zahl, und dieses Produkt lebt davon, dass keine Zahl erfunden
+   * ist.
+   */
+  similarity: number | null;
   /**
    * Der woertliche Abschnitt, auf den sich die Antwort beruft.
    *
