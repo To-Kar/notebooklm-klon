@@ -44,6 +44,7 @@ raet, ist schlimmer als keiner.
 | --- | --- |
 | Notebooks | anlegen, auflisten, oeffnen, loeschen |
 | Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwaehlen, loeschen |
+| Beschreibung | Kurzfassung und Kernthemen je Quelle, direkt nach der Ingestion |
 | Ingestion | Parsen, Chunking mit Herkunftsangabe, Embedding, Statuspflege |
 | Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
 | Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
@@ -86,7 +87,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle sechs, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle sieben, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -97,6 +98,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0004_source_error.sql` | Fehlergrund einer Quelle |
 | `0005_messages.sql` | Chatverlauf |
 | `0006_source_selection.sql` | Quellenauswahl und gefiltertes Retrieval |
+| `0007_source_summary.sql` | Kurzfassung und Kernthemen je Quelle |
 
 **Env-Variablen:**
 

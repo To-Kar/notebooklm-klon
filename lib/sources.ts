@@ -30,6 +30,10 @@ export type Source = {
   error_message: string | null;
   /** Wird diese Quelle bei Fragen beruecksichtigt? */
   selected: boolean;
+  /** Kurzfassung aus der Ingestion, null solange keine erzeugt wurde. */
+  summary: string | null;
+  /** Kernthemen, leer solange keine Kurzfassung vorliegt. */
+  topics: string[];
   created_at: string;
 };
 
@@ -41,7 +45,7 @@ export type Source = {
  * erst auf, wenn irgendwo ein Feld fehlt.
  */
 export const SOURCE_COLUMNS =
-  "id, notebook_id, title, type, status, storage_path, url, error_message, selected, created_at";
+  "id, notebook_id, title, type, status, storage_path, url, error_message, selected, summary, topics, created_at";
 
 /**
  * Die Anzeigetexte liegen in lib/source-limits.ts, weil auch
@@ -160,6 +164,31 @@ export async function listSourceFilePaths(
   return ((data ?? []) as { storage_path: string | null }[])
     .map((row) => row.storage_path)
     .filter((path): path is string => path !== null);
+}
+
+/**
+ * Speichert Kurzfassung und Kernthemen.
+ *
+ * Getrennt vom Status: die Beschreibung entsteht nach der eigentlichen
+ * Verarbeitung und darf deren Ergebnis nicht mehr anfassen.
+ */
+export async function saveSourceSummary(
+  id: string,
+  summary: string,
+  topics: string[],
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("sources")
+    .update({ summary, topics })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(
+      `Beschreibung konnte nicht gespeichert werden: ${error.message}`,
+    );
+  }
 }
 
 /** Waehlt eine Quelle an oder ab. */

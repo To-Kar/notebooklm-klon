@@ -1,9 +1,10 @@
 import { embedDocuments } from "@/lib/embeddings";
-import { SOURCE_COLUMNS, type Source } from "@/lib/sources";
+import { SOURCE_COLUMNS, saveSourceSummary, type Source } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
 import { MAX_CHUNKS_PER_SOURCE, chunkSegments } from "./chunk";
 import { ExtractionError, extractSourceSegments } from "./extract";
+import { summarizeSource } from "./summarize";
 
 /**
  * Verarbeitet eine Quelle zu durchsuchbaren Chunks.
@@ -148,6 +149,25 @@ export async function ingestSource(sourceId: string): Promise<IngestResult> {
     const embeddings = await embedDocuments(chunks.map((c) => c.content));
     await writeChunks(source, chunks, embeddings);
     await setStatus(source.id, "ready");
+
+    // Erst nach 'ready', und ausdruecklich ohne den Lauf zu gefaehrden.
+    //
+    // Die Quelle ist ohne Beschreibung voll benutzbar - Chunks, Embeddings
+    // und Zitate stehen. Eine funktionierende Quelle als "Fehler" zu
+    // markieren, weil ein Beiwerk fehlt, waere eine Verschlechterung.
+    try {
+      const beschreibung = await summarizeSource(chunks);
+      await saveSourceSummary(
+        source.id,
+        beschreibung.summary,
+        beschreibung.topics,
+      );
+    } catch (error) {
+      console.error(
+        `Beschreibung fuer Quelle ${source.id} fehlgeschlagen:`,
+        error,
+      );
+    }
 
     return { outcome: "ready", chunkCount: chunks.length };
   } catch (error) {
