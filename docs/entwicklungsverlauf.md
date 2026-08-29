@@ -4,7 +4,7 @@ Chronologisches Protokoll der Arbeitspakete, der Probleme und der
 Entscheidungen. Geschrieben als Gedaechtnisstuetze, nicht als Werbetext —
 deshalb stehen hier auch die Fehler und die Sackgassen.
 
-Stand: 11 gemergte Pull Requests, 48 Commits, 5 Migrationen, 135 Tests.
+Stand: 21 gemergte Pull Requests, 87 Commits, 11 Migrationen, 219 Tests.
 
 ---
 
@@ -292,13 +292,141 @@ eigene Escaping: alle drei Werkzeuge machen aus `\\n` selbst einen
 Zeilenumbruch und schrieben damit exakt die kaputte Fassung zurueck. Lehre:
 frueher die Bytes ansehen (`od -c`), statt der Erfolgsmeldung zu glauben.
 
+
+---
+
+## Vorzeigbar machen
+
+### CI (PR #12)
+
+Lint, `tsc --noEmit`, Tests und Build bei jedem Push.
+
+**Der erste Lauf war rot:** `Cannot find name 'LayoutProps'` und `'PageProps'`.
+Next erzeugt diese Typen selbst nach `.next/types`, und auf einem frischen
+Checkout gibt es die noch nicht. Lokal war es unsichtbar, weil ein alter
+`.next`-Ordner herumlag, den der laufende Dev-Server immer wieder auffuellte.
+Behoben mit `npx next typegen` vor dem Typecheck.
+
+### README und Deployment (PR #13, #14)
+
+**Die Live-URL lieferte die Vercel-Anmeldeseite** — 302 auf `vercel.com/sso-api`.
+Ursache war "Require Log In" in den Projekteinstellungen. Danach fehlte
+`LLM_API_KEY` in Vercel, und der Health-Check hat es nicht gemeldet, weil er
+nur vier von sechs Variablen prueft. Beides behoben, der Health-Check deckt
+jetzt alle sechs ab.
+
+---
+
+## Phase 2: Naeher an NotebookLM
+
+### Quellenauswahl (PR #15)
+
+Quellen an- und abwaehlen, das Retrieval sucht nur in den ausgewaehlten.
+
+**Zwei Anlaeufe fuer die Kaestchen.** Der erste haengte den Zustand an einen
+`useEffect`, was `react-hooks/set-state-in-effect` zu Recht abgelehnt hat.
+Der zweite nimmt `useOptimistic`: das Kaestchen kippt sofort, der Server zieht
+nach. Dieselbe Lint-Regel schlug spaeter im Audio-Panel wieder zu; dort wird
+die Abspieladresse jetzt beim Rendern abgeleitet statt im Effekt gesetzt.
+
+**Irrefuehrender Platzhalter.** Waren Quellen da, aber alle abgewaehlt, stand
+im Chat "Erst eine Quelle hinzufuegen" — und schickte den Nutzer damit in die
+falsche Richtung. Es gibt jetzt drei Zustaende statt zwei.
+
+### Quellen beschreiben sich selbst (PR #16)
+
+Kurzfassung und Kernthemen je Quelle, erzeugt am Ende der Ingestion. Die
+Abschnitte werden gleichmaessig ueber das Dokument verteilt gezogen, nicht von
+vorn: sonst beschriebe die Zusammenfassung eines langen Dokuments nur das
+Vorwort.
+
+Bewusst kein eigener Aufruf pro Seitenaufruf. Quellen kommen selten hinzu,
+Fragen oft — und das Tageskontingent ist knapp.
+
+### Notizen (PR #17)
+
+Antworten sichern oder selbst schreiben. Gesicherte Antworten behalten ihre
+Belege, aber nur die tatsaechlich zitierten: alle acht Auszuege mitzuspeichern
+waere Ballast, den niemand liest.
+
+### Gesprochene Zusammenfassung (PR #18)
+
+Zwei Stimmen, rund 30 Sekunden, in einem Durchgang erzeugt und als WAV im
+Bucket abgelegt.
+
+**Gemessen statt geschaetzt:** die Sprachausgabe braucht etwa 0,76 Sekunden je
+Sekunde Audio. Daraus folgt die Laenge — eine Serverless-Function hat 60
+Sekunden, und laenger als eine halbe Minute geht sich darin nicht aus.
+
+**Beim Anhoeren gefunden:** das Skript endete auf einer Frage von Ben, die
+niemand mehr beantwortete. `trimScript` schneidet nachlaufende Ben-Zeilen ab.
+
+### Themenlandkarte (PR #19)
+
+Knoten und Kanten aus strukturierter Ausgabe, aber mit Belegen: jeder Knoten
+traegt die Nummern der Abschnitte, aus denen er stammt, und ein Klick oeffnet
+denselben Belegdialog wie im Chat.
+
+Das Layout ist eine **reine Funktion** — Baum rein, Koordinaten raus. Bei
+Grafikcode ist das der einzige Weg, eine Ueberlappung zu finden, ohne
+hinzusehen.
+
+**Zwei Fehler, die erst der Browser zeigte:** neun von 22 Beschriftungen waren
+abgeschnitten — nicht wegen zu langem Text, sondern weil die Flexbox die
+Beschriftung auf eine Zeile zusammendrueckte (zwei Zeilen brauchen 28
+Bildpunkte, Belegnummern 14, Abstaende 16, verfuegbar waren 56). Und die Karte
+war mit 674 Bildpunkten breiter als die Arbeitsflaeche mit 598.
+
+### Umbenennen (PR #20)
+
+Notebooks und Quellen umbenennen, an Ort und Stelle.
+
+**Der eigentliche Fund kam beim Testen.** Nach dem Umbenennen einer Quelle
+zeigte die Seitenleiste den neuen Namen, die Themenlandkarte weiter den alten:
+Belege werden als Momentaufnahme gespeichert. Richtig fuer den Wortlaut,
+falsch fuer den Titel — dieselbe Quelle stand unter zwei Namen.
+`withCurrentTitles` zieht nur den Titel nach; der woertliche Abschnitt bleibt
+unangetastet, sonst waere der Beleg gefaelscht.
+
+**Und ein aelterer Fehler fiel auf, als die Screenshots entstanden:** der
+Belegdialog sass in der linken oberen Ecke statt in der Mitte. Tailwinds
+Preflight setzt `margin: 0` auf alle Elemente und hebelt damit das
+`margin: auto` aus, mit dem der Browser modale Dialoge zentriert. Der
+angeschnittene Dialog im alten README-Screenshot war also kein schlecht
+gewaehlter Ausschnitt, sondern der Fehler selbst — ueber mehrere
+Arbeitspakete hinweg uebersehen, weil er wie eine unglueckliche Bildwahl
+aussah und niemand die Position gemessen hat.
+
+### Einstiegsfragen (PR #21)
+
+Vorschlaege im leeren Chat, ein Klick stellt die Frage.
+
+**Das Kontingent hat die Bauform bestimmt.** Bei 20 Anfragen am Tag darf so
+etwas keinen eigenen Aufruf kosten. Die Fragen entstehen deshalb im *selben*
+Aufruf wie Kurzfassung und Kernthemen — erweitert wurde nur das Antwortschema.
+
+Die Vorschlaege werden reihum aus den Quellen gemischt, nicht nacheinander:
+bei vier Plaetzen und drei Fragen je Quelle kaeme die zweite Quelle sonst
+gerade noch vor und jede weitere gar nicht.
+
+**Auf dem Handy gefunden:** im Reiter "Karte" scrollte die ganze Seite
+seitwaerts statt die Karte in ihrem Kasten. Ein Grid-Element schrumpft ohne
+`min-w-0` nicht unter seinen Inhalt, also wuchs die Spalte mit.
+
 ---
 
 ## Wiederkehrende Muster
 
 **Was Build und Lint nie gefunden haben.** Die stille Ueberlappung, die
 Zeilenumbrueche, das stumme `onClose`, das verschluckte gzip, der abgebrochene
-Stream — alles gruen im Build, alles kaputt in der Sache.
+Stream, der Dialog in der Ecke, die abgeschnittenen Beschriftungen, der
+veraltete Titel im gespeicherten Beleg, die Seite, die auf dem Handy
+seitwaerts rutscht — alles gruen im Build, alles kaputt in der Sache.
+
+**Wo die Fehler stattdessen herkamen.** Fast jeder Fund dieses Projekts
+stammt aus einer von drei Quellen: die Anwendung im Browser bedienen, eine
+Zahl nachmessen statt sie zu schaetzen, oder einen Test gegen den wieder
+eingebauten Fehler gegenpruefen. Lesen allein hat fast nichts gefunden.
 
 **Was geholfen hat.** Gegen die echte Instanz pruefen statt gegen Attrappen.
 Eigenschaften testen statt Rueckgabewerte. Und Tests gegen echte Fehler
@@ -314,8 +442,9 @@ war gar nicht verfuegbar, und das „schnellere" Lite-Modell brauchte 115 Sekund
 
 | Punkt | Stand |
 | --- | --- |
-| Screenshot fuer die README | fehlt — `docs/screenshot-chat.png` |
-| CI (GitHub Actions) | nicht eingerichtet |
-| Deployment | nicht erfolgt; 20 Anfragen/Tag begrenzen eine oeffentliche Demo |
-| Mindmap (Phase 2) | entschieden, nicht gebaut; strukturiertes JSON verifiziert |
-| Audio Overview, Video | nicht begonnen |
+| Mehrere Gespraeche je Notebook | nicht gebaut; ein Notebook hat genau einen Verlauf |
+| Quellen per Websuche finden | nicht gebaut |
+| Video-Overview | nicht gebaut; Audio und Karte decken den Zweck ab |
+| Study Guide, Zeitleiste | nicht gebaut |
+| Hybride Suche (Volltext neben Vektoren) | nicht gebaut; bei Eigennamen und Zahlen waere sie besser |
+| 20 Anfragen/Tag | Grenze des Anbieters, nicht behebbar — gespeicherte Verlaeufe federn es ab |
