@@ -152,7 +152,10 @@ export default async function NotebookPage({
   }));
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    // max-w-6xl statt 5xl: die Themenlandkarte ist 674 Bildpunkte breit und
+    // passte in die schmalere Spalte nicht hinein. Die Uebersichtsseite bleibt
+    // bei 5xl - dort steht nur eine Liste.
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <Link
         href="/"
         className="text-sm text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
