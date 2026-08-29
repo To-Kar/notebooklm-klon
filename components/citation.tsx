@@ -142,7 +142,11 @@ export function CitationDialog({
     <dialog
       ref={dialog}
       aria-labelledby="beleg-titel"
-      className="w-[min(38rem,92vw)] rounded-xl border border-neutral-200 bg-background p-0 text-foreground backdrop:bg-neutral-900/40 dark:border-neutral-800"
+      // m-auto zentriert den Dialog. Der Browser macht das bei showModal von
+      // allein ueber margin:auto - Tailwinds Preflight setzt aber margin:0 auf
+      // alle Elemente und hebelt es aus. Ohne diese Klasse klebt der Dialog in
+      // der linken oberen Ecke.
+      className="m-auto w-[min(38rem,92vw)] rounded-xl border border-neutral-200 bg-background p-0 text-foreground backdrop:bg-neutral-900/40 dark:border-neutral-800"
     >
       <div className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-3 dark:border-neutral-800">
         <div>
