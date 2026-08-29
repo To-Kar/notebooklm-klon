@@ -129,11 +129,19 @@ export function ChatPanel({
   notebookId,
   blocker,
   initialEntries,
+  starterQuestions,
 }: {
   notebookId: string;
   blocker: ChatBlocker;
   /** Der gespeicherte Verlauf, vom Server geladen. */
   initialEntries: ChatEntry[];
+  /**
+   * Einstiegsfragen aus den ausgewaehlten Quellen.
+   *
+   * Nur im leeren Chat sichtbar: wer schon gefragt hat, weiss, was er
+   * fragen will, und braucht keine Vorschlaege mehr.
+   */
+  starterQuestions: string[];
 }) {
   const [entries, setEntries] = useState<ChatEntry[]>(initialEntries);
   const [frage, setFrage] = useState("");
@@ -154,11 +162,21 @@ export function ChatPanel({
     ende.current?.scrollIntoView({ block: "end" });
   }, [entries]);
 
-  async function frageStellen(event: React.FormEvent) {
+  function frageStellen(event: React.FormEvent) {
     event.preventDefault();
+    void stelleFrage(frage);
+  }
 
-    const text = frage.trim();
-    if (text.length === 0 || laeuft) return;
+  /**
+   * Schickt eine Frage ab.
+   *
+   * Getrennt vom Formular-Ereignis, damit die Einstiegsfragen denselben Weg
+   * nehmen. Eine zweite Fassung dieser Funktion waere die Stelle, an der
+   * spaeter genau ein Zweig vergessen wird.
+   */
+  async function stelleFrage(eingabe: string) {
+    const text = eingabe.trim();
+    if (text.length === 0 || laeuft || !kannFragen) return;
 
     const verlauf: ChatEntry[] = [
       ...entries,
@@ -277,6 +295,29 @@ export function ChatPanel({
                   ? "Waehl links mindestens eine Quelle aus, dann kannst du Fragen stellen."
                   : "Sobald eine Quelle verarbeitet ist, kannst du hier Fragen stellen."}
             </p>
+
+            {kannFragen && starterQuestions.length > 0 ? (
+              <div className="mt-5 w-full max-w-lg">
+                <p className="text-xs text-neutral-400 dark:text-neutral-500">
+                  Aus deinen Quellen
+                </p>
+
+                <ul className="mt-2 space-y-1.5">
+                  {starterQuestions.map((vorschlag) => (
+                    <li key={vorschlag}>
+                      <button
+                        type="button"
+                        onClick={() => void stelleFrage(vorschlag)}
+                        disabled={laeuft}
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-left text-sm transition hover:border-neutral-400 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-800 dark:hover:border-neutral-600 dark:hover:bg-neutral-900"
+                      >
+                        {vorschlag}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         ) : (
           entries.map((entry, index) => (
