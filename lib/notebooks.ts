@@ -101,7 +101,7 @@ export async function deleteNotebook(id: string): Promise<void> {
   const { error } = await supabase.from("notebooks").delete().eq("id", id);
 
   if (error) {
-    throw new Error(`Notebook konnte nicht geloescht werden: ${error.message}`);
+    throw new Error(`Notebook konnte nicht gelöscht werden: ${error.message}`);
   }
 }
 

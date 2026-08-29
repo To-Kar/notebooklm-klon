@@ -86,7 +86,7 @@ export async function deleteNote(id: string): Promise<string | null> {
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Notiz konnte nicht geloescht werden: ${error.message}`);
+    throw new Error(`Notiz konnte nicht gelöscht werden: ${error.message}`);
   }
 
   return (data as { notebook_id: string } | null)?.notebook_id ?? null;

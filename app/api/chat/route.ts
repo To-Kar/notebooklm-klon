@@ -111,7 +111,7 @@ function readRequestBody(body: unknown):
   | { ok: true; notebookId: string; question: string }
   | { ok: false; message: string } {
   if (typeof body !== "object" || body === null) {
-    return { ok: false, message: "Ungueltige Anfrage." };
+    return { ok: false, message: "Ungültige Anfrage." };
   }
 
   const { notebookId, question } = body as {
@@ -160,7 +160,7 @@ export async function POST(request: Request) {
   try {
     parsedBody = await request.json();
   } catch {
-    return Response.json({ message: "Ungueltiges JSON." }, { status: 400 });
+    return Response.json({ message: "Ungültiges JSON." }, { status: 400 });
   }
 
   const input = readRequestBody(parsedBody);

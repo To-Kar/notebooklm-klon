@@ -29,7 +29,7 @@ export function checkTitle(input: string, maxLength: number): TitleCheck {
   if (title.length > maxLength) {
     return {
       ok: false,
-      reason: `Der Titel darf hoechstens ${maxLength} Zeichen lang sein.`,
+      reason: `Der Titel darf höchstens ${maxLength} Zeichen lang sein.`,
     };
   }
 

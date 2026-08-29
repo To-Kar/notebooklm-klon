@@ -276,8 +276,8 @@ export function ChatPanel({
         <div className="flex justify-end border-b border-neutral-200 px-4 py-2 dark:border-neutral-800">
           <ConfirmButton
             size="klein"
-            label="Gespraech leeren"
-            question="Gespraech mit allen Antworten und Belegen leeren?"
+            label="Gespräch leeren"
+            question="Gespräch mit allen Antworten und Belegen leeren?"
             action={() => clearConversationAction(notebookId)}
             onDone={() => setEntries([])}
           />
@@ -292,7 +292,7 @@ export function ChatPanel({
               {blocker === null
                 ? "Jede Antwort verweist mit Nummern auf die Abschnitte, aus denen sie stammt."
                 : blocker === "keine-auswahl"
-                  ? "Waehl links mindestens eine Quelle aus, dann kannst du Fragen stellen."
+                  ? "Wähl links mindestens eine Quelle aus, dann kannst du Fragen stellen."
                   : "Sobald eine Quelle verarbeitet ist, kannst du hier Fragen stellen."}
             </p>
 
@@ -384,8 +384,8 @@ export function ChatPanel({
             blocker === null
               ? "Frag etwas zu deinen Quellen"
               : blocker === "keine-auswahl"
-                ? "Erst eine Quelle auswaehlen"
-                : "Erst eine Quelle hinzufuegen"
+                ? "Erst eine Quelle auswählen"
+                : "Erst eine Quelle hinzufügen"
           }
           aria-label="Frage an die Quellen"
           disabled={!kannFragen || laeuft}

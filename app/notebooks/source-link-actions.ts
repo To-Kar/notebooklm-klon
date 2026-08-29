@@ -55,7 +55,7 @@ export async function getSourceLinkAction(
 
   if (error || !data) {
     console.error("Signierte URL fehlgeschlagen:", error?.message);
-    return { url: null, error: "Die Datei konnte nicht geoeffnet werden." };
+    return { url: null, error: "Die Datei konnte nicht geöffnet werden." };
   }
 
   // PDF-Viewer im Browser springen ueber dieses Fragment auf die Seite.

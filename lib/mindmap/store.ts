@@ -130,7 +130,7 @@ export async function failMindmap(
 
   if (error) {
     console.error(
-      `Fehlerzustand fuer Notebook ${notebookId} nicht gespeichert:`,
+      `Fehlerzustand für Notebook ${notebookId} nicht gespeichert:`,
       error.message,
     );
   }

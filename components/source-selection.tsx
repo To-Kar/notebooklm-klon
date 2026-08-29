@@ -63,7 +63,7 @@ export function SourceCheckbox({
       checked={optimistisch}
       disabled={disabled || laeuft}
       onChange={(event) => umschalten(event.target.checked)}
-      aria-label={`${title} bei Fragen beruecksichtigen`}
+      aria-label={`${title} bei Fragen berücksichtigen`}
       className="mt-0.5 size-4 shrink-0 cursor-pointer accent-neutral-900 disabled:cursor-not-allowed disabled:opacity-40 dark:accent-neutral-100"
     />
   );
@@ -103,7 +103,7 @@ export function SelectAllSources({
       disabled={laeuft}
       className="text-xs text-neutral-500 underline underline-offset-2 transition hover:text-neutral-900 disabled:opacity-60 dark:text-neutral-400 dark:hover:text-neutral-100"
     >
-      {alleAusgewaehlt ? "Keine auswaehlen" : "Alle auswaehlen"}
+      {alleAusgewaehlt ? "Keine auswählen" : "Alle auswählen"}
     </button>
   );
 }

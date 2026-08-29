@@ -145,7 +145,7 @@ export function MindmapPanel({
       <div className="space-y-1">
         <h2 className="text-sm font-semibold">Themenlandkarte</h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Wie die ausgewaehlten Quellen zusammenhaengen. Jede Nummer fuehrt zur
+          Wie die ausgewählten Quellen zusammenhängen. Jede Nummer führt zur
           Stelle, aus der der Knoten stammt.
         </p>
       </div>
@@ -162,7 +162,7 @@ export function MindmapPanel({
 
         {!canGenerate ? (
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            Waehl zuerst eine verarbeitete Quelle aus.
+            Wähl zuerst eine verarbeitete Quelle aus.
           </span>
         ) : null}
 

@@ -146,8 +146,8 @@ export function NotesPanel({
                 <span>·</span>
                 <ConfirmButton
                   size="klein"
-                  label="Loeschen"
-                  question="Notiz loeschen?"
+                  label="Löschen"
+                  question="Notiz löschen?"
                   action={() => deleteNoteAction(note.id)}
                 />
               </p>

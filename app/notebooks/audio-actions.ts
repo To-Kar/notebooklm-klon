@@ -63,5 +63,5 @@ export async function getAudioUrlAction(
 
   return url
     ? { url, error: null }
-    : { url: null, error: "Die Aufnahme konnte nicht geoeffnet werden." };
+    : { url: null, error: "Die Aufnahme konnte nicht geöffnet werden." };
 }

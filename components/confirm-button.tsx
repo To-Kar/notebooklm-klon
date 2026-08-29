@@ -13,8 +13,8 @@ import { useRouter } from "next/navigation";
 export function ConfirmButton({
   label,
   question,
-  confirmLabel = "Loeschen",
-  pendingLabel = "Loescht ...",
+  confirmLabel = "Löschen",
+  pendingLabel = "Löscht ...",
   action,
   onDone,
   size = "normal",

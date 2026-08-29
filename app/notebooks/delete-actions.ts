@@ -29,8 +29,8 @@ export async function deleteSourceAction(
   try {
     await deleteSource(source.id);
   } catch (error) {
-    console.error("Quelle loeschen fehlgeschlagen:", error);
-    return { error: "Die Quelle konnte nicht geloescht werden." };
+    console.error("Quelle löschen fehlgeschlagen:", error);
+    return { error: "Die Quelle konnte nicht gelöscht werden." };
   }
 
   revalidatePath(`/notebooks/${source.notebook_id}`);
@@ -43,8 +43,8 @@ export async function deleteNotebookAction(
   try {
     await deleteNotebook(notebookId);
   } catch (error) {
-    console.error("Notebook loeschen fehlgeschlagen:", error);
-    return { error: "Das Notebook konnte nicht geloescht werden." };
+    console.error("Notebook löschen fehlgeschlagen:", error);
+    return { error: "Das Notebook konnte nicht gelöscht werden." };
   }
 
   revalidatePath("/");

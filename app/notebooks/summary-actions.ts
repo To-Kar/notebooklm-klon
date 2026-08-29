@@ -52,7 +52,7 @@ export async function refreshSourceSummaryAction(
       beschreibung.questions,
     );
   } catch (error) {
-    console.error(`Beschreibung fuer Quelle ${sourceId} fehlgeschlagen:`, error);
+    console.error(`Beschreibung für Quelle ${sourceId} fehlgeschlagen:`, error);
 
     // Ein erschoepftes Kontingent traegt eine Meldung, die weiterhilft.
     const message =

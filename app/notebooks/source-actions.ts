@@ -62,7 +62,7 @@ export async function addUrlSourceAction(
 
   if (!url) {
     return {
-      error: "Bitte gib eine gueltige http- oder https-Adresse ein.",
+      error: "Bitte gib eine gültige http- oder https-Adresse ein.",
       url: submittedUrl,
     };
   }
@@ -94,17 +94,17 @@ export async function addFileSourceAction(
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "Bitte waehl eine Datei aus." };
+    return { error: "Bitte wähl eine Datei aus." };
   }
 
   // Dieselben Pruefungen wie im Formular. Das Formular ist Komfort,
   // hier ist die Grenze, die zaehlt.
   if (file.size > SOURCE_FILE_MAX_BYTES) {
-    return { error: `Die Datei ist groesser als ${SOURCE_FILE_MAX_LABEL}.` };
+    return { error: `Die Datei ist größer als ${SOURCE_FILE_MAX_LABEL}.` };
   }
 
   if (!isAllowedSourceMimeType(file.type)) {
-    return { error: "Nur PDF- und Textdateien werden unterstuetzt." };
+    return { error: "Nur PDF- und Textdateien werden unterstützt." };
   }
 
   try {

@@ -203,7 +203,7 @@ export async function ingestSource(sourceId: string): Promise<IngestResult> {
       );
     } catch (error) {
       console.error(
-        `Beschreibung fuer Quelle ${source.id} fehlgeschlagen:`,
+        `Beschreibung für Quelle ${source.id} fehlgeschlagen:`,
         error,
       );
     }
