@@ -1,8 +1,8 @@
 # NotebookLM Klon
 
-Ein quellengestuetzter Recherche-Assistent nach Vorbild von Google NotebookLM.
+Ein quellengestützter Recherche-Assistent nach Vorbild von Google NotebookLM.
 Notebook anlegen, Quellen hochladen (PDF, Textdatei, URL), Fragen stellen —
-**und jede Aussage der Antwort zurueckverfolgen bis zur Textstelle, aus der sie
+**und jede Aussage der Antwort zurückverfolgen bis zur Textstelle, aus der sie
 stammt.**
 
 **Live: https://notebooklm-klon-to-kar.vercel.app**
@@ -10,14 +10,14 @@ stammt.**
 ![Chat mit Belegen: die Antwort verweist mit Nummern auf die Abschnitte, aus denen sie stammt](docs/screenshot-chat.png)
 
 > Bewerbungsaufgabe. Der Fokus liegt auf dem Kern des Produkts und auf
-> nachvollziehbaren Entscheidungen, nicht auf Funktionsfuelle.
+> nachvollziehbaren Entscheidungen, nicht auf Funktionsfülle.
 
-> **Zur Live-Demo:** Notebooks, Quellen und gespeicherte Gespraeche lassen sich
-> jederzeit ansehen. Das Stellen *neuer* Fragen haengt am kostenlosen
-> Kontingent des Anbieters — **20 Anfragen pro Tag fuer das gesamte Projekt**.
-> Ist es aufgebraucht, meldet der Chat das ausdruecklich, statt stumm zu
-> scheitern. Wer die Antwortqualitaet selbst pruefen moechte, startet das
-> Projekt am besten lokal mit einem eigenen Schluessel.
+> **Zur Live-Demo:** Notebooks, Quellen und gespeicherte Gespräche lassen sich
+> jederzeit ansehen. Das Stellen *neuer* Fragen hängt am kostenlosen
+> Kontingent des Anbieters — **20 Anfragen pro Tag für das gesamte Projekt**.
+> Ist es aufgebraucht, meldet der Chat das ausdrücklich, statt stumm zu
+> scheitern. Wer die Antwortqualität selbst prüfen möchte, startet das
+> Projekt am besten lokal mit einem eigenen Schlüssel.
 >
 > Dieses Kontingent hat mehrere Entscheidungen im Code geformt. Die
 > Einstiegsfragen etwa entstehen im selben Anbieteraufruf wie die
@@ -28,24 +28,24 @@ stammt.**
 
 Der Wert von NotebookLM liegt nicht im Chat. Ein Chat ohne Belege ist ein
 Sprachmodell mit Textfeld. Der Wert liegt darin, dass **jede Aussage aus deinen
-Quellen belegt ist und du das nachpruefen kannst, ohne dem Modell zu glauben.**
+Quellen belegt ist und du das nachprüfen kannst, ohne dem Modell zu glauben.**
 
-Konkret heisst das hier:
+Konkret heißt das hier:
 
 - Die Antwort verweist mit `[1]`, `[2]` auf die Abschnitte, aus denen sie stammt.
-- Ein Klick auf die Nummer oeffnet den **woertlichen Abschnitt** — nicht eine
+- Ein Klick auf die Nummer öffnet den **wörtlichen Abschnitt** — nicht eine
   Zusammenfassung davon.
-- Von dort fuehrt ein Link ins Original: bei PDFs direkt auf die richtige Seite,
+- Von dort führt ein Link ins Original: bei PDFs direkt auf die richtige Seite,
   bei Web-Quellen auf die Seite.
 - Findet die Suche nichts Passendes, wird das Modell **gar nicht erst gefragt**.
   Statt einer erfundenen Antwort kommt eine Absage.
 
 Der letzte Punkt ist der wichtigste. Ein Assistent, der bei fehlendem Wissen
-raet, ist schlimmer als keiner.
+rät, ist schlimmer als keiner.
 
-![Belegdialog: woertlicher Abschnitt, Quelle, Beleg-Nummer und Link ins Original](docs/screenshot-beleg.png)
+![Belegdialog: wörtlicher Abschnitt, Quelle, Beleg-Nummer und Link ins Original](docs/screenshot-beleg.png)
 
-Derselbe Dialog oeffnet sich ueberall, wo etwas belegt ist: im Chat, unter einer
+Derselbe Dialog öffnet sich überall, wo etwas belegt ist: im Chat, unter einer
 gespeicherten Notiz und in der Themenlandkarte. Eine Belegstelle sieht immer
 gleich aus, egal woher man kommt.
 
@@ -53,36 +53,36 @@ gleich aus, egal woher man kommt.
 
 | Bereich | Was |
 | --- | --- |
-| Notebooks | anlegen, auflisten, oeffnen, umbenennen, loeschen |
-| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwaehlen, umbenennen, loeschen |
+| Notebooks | anlegen, auflisten, öffnen, umbenennen, löschen |
+| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwählen, umbenennen, löschen |
 | Beschreibung | Kurzfassung und Kernthemen je Quelle, direkt nach der Ingestion |
 | Ingestion | Parsen, Chunking mit Herkunftsangabe, Embedding, Statuspflege |
-| Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
-| Einstiegsfragen | Vorschlaege aus den ausgewaehlten Quellen, ein Klick stellt die Frage |
-| Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
-| Verlauf | wird gespeichert, ueberlebt einen Reload, laesst sich leeren |
+| Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgelösten Rückbezügen |
+| Einstiegsfragen | Vorschläge aus den ausgewählten Quellen, ein Klick stellt die Frage |
+| Zitate | klickbare Verweise, wörtlicher Abschnitt, Link ins Original |
+| Verlauf | wird gespeichert, überlebt einen Reload, lässt sich leeren |
 | Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
-| Audio | gesprochene Zusammenfassung der ausgewaehlten Quellen, zwei Stimmen, rund 30 Sekunden |
-| Karte | Themenlandkarte der ausgewaehlten Quellen; jeder Knoten belegt sich und fuehrt in denselben Belegdialog |
+| Audio | gesprochene Zusammenfassung der ausgewählten Quellen, zwei Stimmen, rund 30 Sekunden |
+| Karte | Themenlandkarte der ausgewählten Quellen; jeder Knoten belegt sich und führt in denselben Belegdialog |
 
 ### Themenlandkarte
 
 Was in den Quellen steht, nebeneinander statt hintereinander. Jeder Knoten
-traegt die Nummern der Abschnitte, aus denen er stammt, und ein Klick darauf
-oeffnet denselben Belegdialog wie im Chat.
+trägt die Nummern der Abschnitte, aus denen er stammt, und ein Klick darauf
+öffnet denselben Belegdialog wie im Chat.
 
 ![Themenlandkarte mit Belegnummern an jedem Knoten](docs/screenshot-karte.png)
 
 Der Baum kommt als strukturierte Ausgabe vom Modell, die Anordnung dagegen aus
 einer reinen Funktion in `lib/mindmap/layout.ts`: Baum rein, Koordinaten raus.
-Damit laesst sich pruefen, was man bei Grafikcode sonst nur sieht — dass sich
-keine zwei Kaesten ueberlappen und keiner aus der Flaeche faellt.
+Damit lässt sich prüfen, was man bei Grafikcode sonst nur sieht — dass sich
+keine zwei Kästen überlappen und keiner aus der Fläche fällt.
 
 ## Stack
 
 - **Next.js** (App Router, TypeScript), Deployment auf Vercel
-- **Supabase**: Postgres mit pgvector fuer die Vektorsuche, Storage fuer Dateien
-- **Gemini** fuer Embeddings und Antworten — per Env austauschbar
+- **Supabase**: Postgres mit pgvector für die Vektorsuche, Storage für Dateien
+- **Gemini** für Embeddings und Antworten — per Env austauschbar
 
 Ein einziges Deploy-Ziel, eine echte Datenbank statt Attrappe.
 
@@ -105,7 +105,7 @@ Frage ──▶ Rueckbezuege aufloesen ──▶ Vektorsuche ──▶ Kontext b
                                      Klick auf [n] ──▶ Abschnitt + Original
 ```
 
-Die Herkunftsangabe im Chunk ist kein Beiwerk: ohne sie gaebe es keine
+Die Herkunftsangabe im Chunk ist kein Beiwerk: ohne sie gäbe es keine
 klickbaren Zitate und damit kein Produkt.
 
 ## Lokal starten
@@ -158,85 +158,85 @@ Live-Demo unter `/api/health`.
 > **Zur Embedding-Dimension:** `chunks.embedding` und die Signatur von
 > `match_chunks` stehen auf 1536. Wer das Embedding-Modell wechselt, muss beide
 > Stellen anpassen. `gemini-embedding-001` liefert auf Wunsch genau 1536, ein
-> anderer Anbieter womoeglich nicht. Der Code prueft die Laenge und bricht ab,
+> anderer Anbieter womöglich nicht. Der Code prüft die Länge und bricht ab,
 > statt unbrauchbare Vektoren zu schreiben.
 
 ## Entscheidungen
 
-Die ausfuehrlichen Begruendungen stehen in den Pull Requests. Die wichtigsten:
+Die ausführlichen Begründungen stehen in den Pull Requests. Die wichtigsten:
 
 **Der Browser spricht nie mit Supabase.** Alle Zugriffe laufen serverseitig, der
-Secret-Key bleibt auf dem Server. Rechte hat ausschliesslich `service_role`;
+Secret-Key bleibt auf dem Server. Rechte hat ausschließlich `service_role`;
 `anon` bekommt bewusst keine, obwohl der Publishable Key im Client-Bundle liegt.
 
-**Quellen lassen sich abwaehlen, und gefiltert wird in der Datenbank.** Ohne
-Einschraenkung verdraengt eine grosse Quelle eine kleine: gemessen an einem
+**Quellen lassen sich abwählen, und gefiltert wird in der Datenbank.** Ohne
+Einschränkung verdrängt eine große Quelle eine kleine: gemessen an einem
 Notebook mit 19 Chunks aus einem Artikel und 3 aus einem PDF war unter den
 besten acht Treffern kein einziger aus dem PDF — die Frage nach dem PDF-Inhalt
-blieb unbeantwortet. Nachtraeglich im Anwendungscode zu filtern haette in genau
-diesem Fall nichts uebrig gelassen.
+blieb unbeantwortet. Nachträglich im Anwendungscode zu filtern hätte in genau
+diesem Fall nichts übrig gelassen.
 
-**Ein Chunk gehoert immer zu genau einer Seite.** Ueber Seitengrenzen hinweg zu
-buendeln waere effizienter, wuerde aber die Seitenzahl im Zitat zur Luege machen.
+**Ein Chunk gehört immer zu genau einer Seite.** Über Seitengrenzen hinweg zu
+bündeln wäre effizienter, würde aber die Seitenzahl im Zitat zur Lüge machen.
 
-**Ohne tragfaehigen Kontext wird nicht gefragt.** Liegt der beste Treffer unter
-einer Mindestaehnlichkeit, gibt es eine feste Absage statt eines LLM-Aufrufs.
+**Ohne tragfähigen Kontext wird nicht gefragt.** Liegt der beste Treffer unter
+einer Mindestähnlichkeit, gibt es eine feste Absage statt eines LLM-Aufrufs.
 Der Schwellwert stammt aus Messungen: passende Fragen erreichten 0,63 bis 0,83,
 eine unpassende 0,50.
 
-**Der Server ist die einzige Wahrheit ueber den Verlauf.** Der Browser schickt
-nur die Frage. Sonst gaebe es zwei Fassungen davon, was gesagt wurde, und sie
+**Der Server ist die einzige Wahrheit über den Verlauf.** Der Browser schickt
+nur die Frage. Sonst gäbe es zwei Fassungen davon, was gesagt wurde, und sie
 liefen auseinander, sobald ein zweiter Tab offen ist.
 
 **Belege werden als Momentaufnahme gespeichert**, nicht als Verweis auf `chunks`.
-Ein Verweis ginge ins Leere, sobald die Quelle geloescht wird — die Antwort
+Ein Verweis ginge ins Leere, sobald die Quelle gelöscht wird — die Antwort
 beruhte aber nun einmal auf diesem Text.
 
-**URL-Abruf mit Adresspruefung beim Verbindungsaufbau.** Ohne Auth kann jeder
+**URL-Abruf mit Adressprüfung beim Verbindungsaufbau.** Ohne Auth kann jeder
 eine Adresse hinterlegen, abgerufen wird sie vom Server. Den Hostnamen zu
-pruefen genuegt nicht: ein unauffaelliger Name kann per DNS ins private Netz
-zeigen. Erst aufzuloesen und dann abzurufen hat eine Luecke (DNS-Rebinding),
-deshalb haengt die Pruefung in der `lookup`-Funktion und trifft die Adresse, zu
-der tatsaechlich verbunden wird.
+prüfen genügt nicht: ein unauffälliger Name kann per DNS ins private Netz
+zeigen. Erst aufzulösen und dann abzurufen hat eine Lücke (DNS-Rebinding),
+deshalb hängt die Prüfung in der `lookup`-Funktion und trifft die Adresse, zu
+der tatsächlich verbunden wird.
 
 ## Gemessen, nicht geraten
 
-Zahlen im Code stehen nicht auf Gefuehl, sondern auf Messungen gegen die echte
+Zahlen im Code stehen nicht auf Gefühl, sondern auf Messungen gegen die echte
 API:
 
 | Messung | Ergebnis | Konsequenz im Code |
 | --- | --- | --- |
-| Embedding-Kontingent | 100 Requests/Minute, jedes Batch-Element zaehlt einzeln | Batchgroesse 100, Wartebudget 45 s, max. 200 Chunks je Quelle |
-| Chat-Kontingent | **20 Anfragen pro Tag** | Folgefragen werden nur bei echtem Rueckbezug umgeschrieben |
+| Embedding-Kontingent | 100 Requests/Minute, jedes Batch-Element zählt einzeln | Batchgröße 100, Wartebudget 45 s, max. 200 Chunks je Quelle |
+| Chat-Kontingent | **20 Anfragen pro Tag** | Folgefragen werden nur bei echtem Rückbezug umgeschrieben |
 | `thinkingBudget: 0` | erstes Zeichen nach 1070 ms statt 7246 ms | im Chat aktiviert |
-| Modellverfuegbarkeit | `gemini-2.5-flash` fuer neue Nutzer gesperrt, `3.7-flash` brauchte 35–53 s | `gemini-3.5-flash` als Standard |
+| Modellverfügbarkeit | `gemini-2.5-flash` für neue Nutzer gesperrt, `3.7-flash` brauchte 35–53 s | `gemini-3.5-flash` als Standard |
 
-Die 20 Anfragen pro Tag sind die haerteste Grenze des Projekts und praegen
+Die 20 Anfragen pro Tag sind die härteste Grenze des Projekts und prägen
 mehrere Designentscheidungen.
 
 ## Tests
 
 135 Tests, Laufzeit unter einer Sekunde. Bewusst nur reine Logik: kein Browser,
-keine Datenbank, kein LLM. Alles andere wurde gegen die echte Instanz geprueft —
-ein Test, der Supabase nachbaut, prueft am Ende nur die Attrappe.
+keine Datenbank, kein LLM. Alles andere wurde gegen die echte Instanz geprüft —
+ein Test, der Supabase nachbaut, prüft am Ende nur die Attrappe.
 
 | Datei | Was |
 | --- | --- |
-| `chunk.test.ts` | Vollstaendigkeit, Ueberlappung, Groessengrenzen, Seitenzahlen |
+| `chunk.test.ts` | Vollständigkeit, Überlappung, Größengrenzen, Seitenzahlen |
 | `citations.test.ts` | Segmentierung des Antworttexts, Belege ohne Quelle |
 | `guards.test.ts` | Adressschemata, Hostnamen |
 | `address-guard.test.ts` | private IP-Bereiche, IPv4-in-IPv6 |
 | `rewrite.test.ts` | wann eine Folgefrage einen LLM-Aufruf wert ist |
 
-**Die Tests wurden gegen echte Fehler geprueft.** Ein Test, der nicht rot werden
+**Die Tests wurden gegen echte Fehler geprüft.** Ein Test, der nicht rot werden
 kann, ist wertlos. Beide Fehler, die im Chunker steckten, wurden zur Kontrolle
-wieder eingebaut — die Tests wurden rot, danach wieder gruen.
+wieder eingebaut — die Tests wurden rot, danach wieder grün.
 
-## KI-gestuetzte Arbeitsweise
+## KI-gestützte Arbeitsweise
 
 Die Aufgabe sah den Einsatz von KI vor. Entscheidend war dabei nicht, dass Code
 erzeugt wurde, sondern **dass jede Behauptung gegen die echte Infrastruktur
-geprueft wurde, bevor sie im Repo landete.** Der Ablauf pro Arbeitspaket:
+geprüft wurde, bevor sie im Repo landete.** Der Ablauf pro Arbeitspaket:
 
 1. Plan nennen, Entscheidungen offenlegen, erst dann Code
 2. Bauen — ein Arbeitspaket, ein Branch, kleine Commits
@@ -244,46 +244,46 @@ geprueft wurde, bevor sie im Repo landete.** Der Ablauf pro Arbeitspaket:
 4. Ergebnis und Trade-off im PR dokumentieren, inklusive verworfener Alternativen
 
 Was dieser Ablauf gefunden hat — Fehler, die weder Build noch Lint gesehen
-haetten:
+hätten:
 
-- **Die Chunk-Ueberlappung griff nie.** Sie war absatzweise gebaut und uebertrug
-  nur Absaetze unter 200 Zeichen; reale Absaetze sind laenger. Das haette nicht
-  gekracht, sondern still die Trefferqualitaet ruiniert.
-- **Harte Zeilenumbrueche gingen unveraendert ins Embedding** — genau das Muster,
+- **Die Chunk-Überlappung griff nie.** Sie war absatzweise gebaut und übertrug
+  nur Absätze unter 200 Zeichen; reale Absätze sind länger. Das hätte nicht
+  gekracht, sondern still die Trefferqualität ruiniert.
+- **Harte Zeilenumbrüche gingen unverändert ins Embedding** — genau das Muster,
   das jede PDF-Extraktion erzeugt.
-- **Ein Eigenschaftstest, der den Fehler durchliess.** Der Testdatengenerator
-  erzeugte Wiederholungen, die Pruefung ging zufaellig durch. Erst die Gegenprobe
+- **Ein Eigenschaftstest, der den Fehler durchließ.** Der Testdatengenerator
+  erzeugte Wiederholungen, die Prüfung ging zufällig durch. Erst die Gegenprobe
   mit wieder eingebautem Fehler machte das sichtbar.
 - **`fetch` durch `node:https` ersetzt und dabei zwei Regressionen eingeschleppt:**
   fehlender User-Agent (Wikipedia antwortete mit 403) und fehlende
-  gzip-Behandlung — letzteres haette lautlos Binaermuell ins Embedding
+  gzip-Behandlung — letzteres hätte lautlos Binärmüll ins Embedding
   geschrieben.
 
-Die Fehler stehen hier, weil sie zur Arbeit gehoeren. Ein Bericht, der nur
-Erfolge auflistet, sagt wenig darueber, wie sorgfaeltig geprueft wurde.
+Die Fehler stehen hier, weil sie zur Arbeit gehören. Ein Bericht, der nur
+Erfolge auflistet, sagt wenig darüber, wie sorgfältig geprüft wurde.
 
 ## Bewusst weggelassen
 
-- **Auth und Multi-User.** Fuer eine Demo unnoetig, wuerde nur Zeit kosten.
-- **Sehr grosse Dokumente.** Die Ingestion ist auf demo-taugliche Groessen
+- **Auth und Multi-User.** Für eine Demo unnötig, würde nur Zeit kosten.
+- **Sehr große Dokumente.** Die Ingestion ist auf demo-taugliche Größen
   ausgelegt, damit sie in die Laufzeitgrenzen einer Serverless-Function passt.
 - **Video-Overview.** Audio und Themenlandkarte stehen, Video nicht: der Kern
   hat Vorrang, und bewegtes Bild bringt hier nichts, was die Karte nicht zeigt.
-- **Mehrere Gespraeche je Notebook** und Export.
+- **Mehrere Gespräche je Notebook** und Export.
 
 ## Bekannte Grenzen
 
 - **20 Chat-Anfragen pro Tag** auf der kostenlosen Stufe des Anbieters. Eine
-  oeffentliche Demo ist damit schnell erschoepft.
-- **Die Vorpruefung beim Umschreiben von Folgefragen loest bei "das" als Artikel
-  faelschlich aus.** Bewusst so belassen: der Fehlalarm kostet einen Aufruf, die
-  Gegenrichtung koennte eine Folgefrage ungeloest in die Suche schicken.
-- **Kein Volltextindex neben der Vektorsuche.** Bei Eigennamen und Zahlen waere
+  öffentliche Demo ist damit schnell erschöpft.
+- **Die Vorprüfung beim Umschreiben von Folgefragen löst bei "das" als Artikel
+  fälschlich aus.** Bewusst so belassen: der Fehlalarm kostet einen Aufruf, die
+  Gegenrichtung könnte eine Folgefrage ungelöst in die Suche schicken.
+- **Kein Volltextindex neben der Vektorsuche.** Bei Eigennamen und Zahlen wäre
   eine hybride Suche besser.
 - **Die gesprochene Zusammenfassung dauert rund 30 Sekunden**, kein
-  mehrminuetiger Podcast. Skript und Sprachausgabe laufen in einer
+  mehrminütiger Podcast. Skript und Sprachausgabe laufen in einer
   Serverless-Function mit 60 Sekunden Grenze; gemessen braucht die
-  Sprachausgabe 0,76 Sekunden je Sekunde Audio. Fuer mehr braeuchte es eine
+  Sprachausgabe 0,76 Sekunden je Sekunde Audio. Für mehr bräuchte es eine
   Aufteilung in Abschnitte mit eigener Zustandsverwaltung.
-- **Der Fehlergrund einer Quelle haelt nur den letzten Versuch fest**, keine
+- **Der Fehlergrund einer Quelle hält nur den letzten Versuch fest**, keine
   Historie.
