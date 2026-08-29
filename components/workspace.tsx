@@ -60,7 +60,10 @@ export function Workspace({
     }`;
 
   return (
-    <div className="space-y-3">
+    // min-w-0: ohne das schrumpft ein Grid-Element nicht unter seinen Inhalt.
+    // Die Themenlandkarte ist 674 Bildpunkte breit, also wuchs auf dem Handy
+    // die ganze Spalte mit - und statt der Karte scrollte die Seite seitwaerts.
+    <div className="min-w-0 space-y-3">
       <div
         role="tablist"
         aria-label="Chat, Notizen, Audio oder Karte"
