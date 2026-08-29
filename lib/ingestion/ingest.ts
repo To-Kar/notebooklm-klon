@@ -2,7 +2,12 @@ import { embedDocuments } from "@/lib/embeddings";
 import { SOURCE_COLUMNS, saveSourceSummary, type Source } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
-import { MAX_CHUNKS_PER_SOURCE, chunkSegments } from "./chunk";
+import {
+  MAX_CHUNKS_PER_SOURCE,
+  chunkSegments,
+  type ChunkMetadata,
+  type SourceChunk,
+} from "./chunk";
 import { ExtractionError, extractSourceSegments } from "./extract";
 import { summarizeSource } from "./summarize";
 
@@ -121,6 +126,39 @@ async function writeChunks(
  * Gibt Fehler als Ergebnis zurueck statt zu werfen, damit die Server Action
  * daraus eine verstaendliche Meldung machen kann. Unerwartetes wird geloggt.
  */
+/**
+ * Laedt die gespeicherten Abschnitte einer Quelle.
+ *
+ * Fuer Laeufe, die nach der Ingestion noch einmal auf den Text schauen -
+ * etwa das Erneuern der Beschreibung. Die Einbettungen bleiben aussen vor:
+ * sie werden dafuer nicht gebraucht und waeren 1536 Zahlen je Zeile.
+ */
+export async function loadSourceChunks(
+  sourceId: string,
+): Promise<SourceChunk[]> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("chunks")
+    .select("chunk_index, content, metadata")
+    .eq("source_id", sourceId)
+    .order("chunk_index", { ascending: true });
+
+  if (error) {
+    throw new Error(`Abschnitte konnten nicht geladen werden: ${error.message}`);
+  }
+
+  return ((data ?? []) as {
+    chunk_index: number;
+    content: string;
+    metadata: ChunkMetadata | null;
+  }[]).map((zeile) => ({
+    index: zeile.chunk_index,
+    content: zeile.content,
+    metadata: zeile.metadata ?? { start: 0, end: zeile.content.length },
+  }));
+}
+
 export async function ingestSource(sourceId: string): Promise<IngestResult> {
   const source = await claimSource(sourceId);
 
@@ -161,6 +199,7 @@ export async function ingestSource(sourceId: string): Promise<IngestResult> {
         source.id,
         beschreibung.summary,
         beschreibung.topics,
+        beschreibung.questions,
       );
     } catch (error) {
       console.error(

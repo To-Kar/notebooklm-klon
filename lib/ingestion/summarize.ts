@@ -21,7 +21,13 @@ import type { SourceChunk } from "./chunk";
 const MAX_INPUT_CHARS = 15_000;
 
 /** Knapp halten: die Kurzfassung steht in einer schmalen Seitenleiste. */
-const MAX_OUTPUT_TOKENS = 400;
+const MAX_OUTPUT_TOKENS = 600;
+
+/** Wie viele Einstiegsfragen eine Quelle hoechstens beisteuert. */
+export const MAX_QUESTIONS_PER_SOURCE = 3;
+
+/** Laenge einer Einstiegsfrage. Was nicht in eine Zeile passt, lockt niemanden. */
+const MAX_QUESTION_LENGTH = 120;
 
 /** Wartebudget bei Rate-Limit. Kurz, weil ein Beiwerk niemanden aufhalten darf. */
 const RETRY_BUDGET_MS = 8_000;
@@ -29,6 +35,14 @@ const RETRY_BUDGET_MS = 8_000;
 export type SourceSummary = {
   summary: string;
   topics: string[];
+  /**
+   * Fragen, die sich aus dieser Quelle beantworten lassen.
+   *
+   * Kommen aus demselben Aufruf wie die Kurzfassung. Eine eigene Erzeugung
+   * waere bei 20 Anfragen am Tag nicht zu rechtfertigen - und der Aufruf,
+   * der die Quelle ohnehin gelesen hat, weiss am besten, was in ihr steht.
+   */
+  questions: string[];
 };
 
 const PROMPT = `Du beschreibst, was in einem Dokument steht.
@@ -38,15 +52,19 @@ Regeln:
 2. Nutze ausschliesslich den vorliegenden Text. Erfinde nichts und ergaenze kein Vorwissen.
 3. Dazu drei bis sechs Kernthemen, jeweils ein bis drei Woerter.
 4. Schreibe auf Deutsch, sachlich, ohne Werbesprache und ohne Einleitungsfloskeln.
-5. Der Text kann Ausschnitte aus verschiedenen Stellen enthalten. Beschreibe das Ganze, nicht nur den Anfang.`;
+5. Der Text kann Ausschnitte aus verschiedenen Stellen enthalten. Beschreibe das Ganze, nicht nur den Anfang.
+6. Dazu drei Fragen, die jemand an dieses Dokument stellen wuerde und die sich aus dem vorliegenden Text auch wirklich beantworten lassen.
+7. Die Fragen sind vollstaendige Saetze mit Fragezeichen, hoechstens zwoelf Woerter, und stehen fuer sich - ohne "hier", "dieses Dokument" oder andere Rueckbezuege.
+8. Frag nach dem Inhalt, nicht ueber das Dokument. Also nicht "Worum geht es in dem Text?", sondern nach der Sache selbst.`;
 
 const SCHEMA = {
   type: "OBJECT",
   properties: {
     summary: { type: "STRING" },
     topics: { type: "ARRAY", items: { type: "STRING" } },
+    questions: { type: "ARRAY", items: { type: "STRING" } },
   },
-  required: ["summary", "topics"],
+  required: ["summary", "topics", "questions"],
 } as const;
 
 /**
@@ -157,5 +175,41 @@ export async function summarizeSource(
       .map((thema) => thema.trim())
       .filter((thema) => thema.length > 0)
       .slice(0, 6),
+    questions: cleanQuestions(geparst.questions),
   };
+}
+
+/**
+ * Sortiert aus, was als Einstiegsfrage nicht taugt.
+ *
+ * Reine Funktion, exportiert und getestet: der Prompt bittet um Fragesaetze,
+ * aber eine Bitte ist keine Garantie. Eine Aufforderung ohne Fragezeichen
+ * oder eine halbe Zeile Fliesstext im Fragenknopf faellt sofort auf.
+ */
+export function cleanQuestions(roh: unknown): string[] {
+  if (!Array.isArray(roh)) return [];
+
+  const gesehen = new Set<string>();
+  const fragen: string[] = [];
+
+  for (const eintrag of roh) {
+    if (typeof eintrag !== "string") continue;
+
+    const frage = eintrag.replace(/\s+/g, " ").trim();
+
+    if (!frage.endsWith("?")) continue;
+    if (frage.length > MAX_QUESTION_LENGTH) continue;
+
+    // Gross- und Kleinschreibung ignorieren: zwei Quellen zum selben Thema
+    // liefern gern dieselbe Frage in leicht anderer Schreibung.
+    const schluessel = frage.toLowerCase();
+    if (gesehen.has(schluessel)) continue;
+
+    gesehen.add(schluessel);
+    fragen.push(frage);
+
+    if (fragen.length === MAX_QUESTIONS_PER_SOURCE) break;
+  }
+
+  return fragen;
 }

@@ -38,6 +38,7 @@ export function Workspace({
   notes,
   audio,
   mindmap,
+  starterQuestions,
 }: {
   notebookId: string;
   blocker: ChatBlocker;
@@ -45,6 +46,7 @@ export function Workspace({
   notes: NoteEntry[];
   audio: AudioState;
   mindmap: MindmapState;
+  starterQuestions: string[];
 }) {
   const [ansicht, setAnsicht] = useState<
     "chat" | "notizen" | "audio" | "karte"
@@ -115,6 +117,7 @@ export function Workspace({
           notebookId={notebookId}
           blocker={blocker}
           initialEntries={initialEntries}
+          starterQuestions={starterQuestions}
         />
       </div>
 

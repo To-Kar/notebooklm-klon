@@ -22,6 +22,7 @@ import { SourceSummary } from "@/components/source-summary";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
 import { withCurrentTitles } from "@/lib/chat/citations";
+import { pickStarterQuestions } from "@/lib/chat/starter";
 import { listMessages } from "@/lib/messages";
 import { getAudioOverview } from "@/lib/audio/store";
 import { getMindmap } from "@/lib/mindmap/store";
@@ -72,7 +73,12 @@ function SourceItem({ source }: { source: Source }) {
       </p>
 
       {source.summary ? (
-        <SourceSummary summary={source.summary} topics={source.topics} />
+        <SourceSummary
+          sourceId={source.id}
+          summary={source.summary}
+          topics={source.topics}
+          hatFragen={source.questions.length > 0}
+        />
       ) : null}
       </div>
     </li>
@@ -139,6 +145,18 @@ export default async function NotebookPage({
     error: mindmapRow?.error_message ?? null,
     canGenerate: blocker === null,
   };
+
+  /**
+   * Einstiegsfragen nur aus den Quellen, in denen auch gesucht wird.
+   *
+   * Waere eine abgewaehlte Quelle dabei, boete der Chat eine Frage an, die
+   * er anschliessend nicht beantworten koennte.
+   */
+  const starterQuestions = pickStarterQuestions(
+    verarbeitete
+      .filter((source) => source.selected)
+      .map((source) => source.questions),
+  );
 
   const initialEntries: ChatEntry[] = messages.map((message) => ({
     role: message.role,
@@ -211,6 +229,7 @@ export default async function NotebookPage({
           notes={notizen}
           audio={audio}
           mindmap={mindmap}
+          starterQuestions={starterQuestions}
         />
       </div>
     </main>

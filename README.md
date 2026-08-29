@@ -18,6 +18,11 @@ stammt.**
 > Ist es aufgebraucht, meldet der Chat das ausdruecklich, statt stumm zu
 > scheitern. Wer die Antwortqualitaet selbst pruefen moechte, startet das
 > Projekt am besten lokal mit einem eigenen Schluessel.
+>
+> Dieses Kontingent hat mehrere Entscheidungen im Code geformt. Die
+> Einstiegsfragen etwa entstehen im selben Anbieteraufruf wie die
+> Quellenbeschreibung, nicht in einem eigenen — sichtbar in
+> `lib/ingestion/summarize.ts`.
 
 ## Worum es geht
 
@@ -53,6 +58,7 @@ gleich aus, egal woher man kommt.
 | Beschreibung | Kurzfassung und Kernthemen je Quelle, direkt nach der Ingestion |
 | Ingestion | Parsen, Chunking mit Herkunftsangabe, Embedding, Statuspflege |
 | Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
+| Einstiegsfragen | Vorschlaege aus den ausgewaehlten Quellen, ein Klick stellt die Frage |
 | Zitate | klickbare Verweise, woertlicher Abschnitt, Link ins Original |
 | Verlauf | wird gespeichert, ueberlebt einen Reload, laesst sich leeren |
 | Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
@@ -109,7 +115,7 @@ npm install
 cp .env.example .env.local
 ```
 
-**Migrationen anwenden** — alle zehn, in dieser Reihenfolge, im
+**Migrationen anwenden** — alle elf, in dieser Reihenfolge, im
 Supabase-SQL-Editor oder per CLI:
 
 | Datei | Inhalt |
@@ -124,6 +130,7 @@ Supabase-SQL-Editor oder per CLI:
 | `0008_notes.sql` | Notizen |
 | `0009_audio_overview.sql` | Gesprochene Zusammenfassung und ihr Bucket |
 | `0010_mindmap.sql` | Themenlandkarte |
+| `0011_source_questions.sql` | Einstiegsfragen je Quelle |
 
 **Env-Variablen:**
 

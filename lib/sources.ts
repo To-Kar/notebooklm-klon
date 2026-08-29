@@ -35,6 +35,8 @@ export type Source = {
   summary: string | null;
   /** Kernthemen, leer solange keine Kurzfassung vorliegt. */
   topics: string[];
+  /** Einstiegsfragen, leer solange keine Kurzfassung vorliegt. */
+  questions: string[];
   created_at: string;
 };
 
@@ -46,7 +48,7 @@ export type Source = {
  * erst auf, wenn irgendwo ein Feld fehlt.
  */
 export const SOURCE_COLUMNS =
-  "id, notebook_id, title, type, status, storage_path, url, error_message, selected, summary, topics, created_at";
+  "id, notebook_id, title, type, status, storage_path, url, error_message, selected, summary, topics, questions, created_at";
 
 /**
  * Die Anzeigetexte liegen in lib/source-limits.ts, weil auch
@@ -177,12 +179,13 @@ export async function saveSourceSummary(
   id: string,
   summary: string,
   topics: string[],
+  questions: string[],
 ): Promise<void> {
   const supabase = createAdminClient();
 
   const { error } = await supabase
     .from("sources")
-    .update({ summary, topics })
+    .update({ summary, topics, questions })
     .eq("id", id);
 
   if (error) {
