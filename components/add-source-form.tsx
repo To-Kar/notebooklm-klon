@@ -62,12 +62,12 @@ export function AddSourceForm({ notebookId }: { notebookId: string }) {
     }
 
     if (file.size > SOURCE_FILE_MAX_BYTES) {
-      setFileCheckError(`Die Datei ist groesser als ${SOURCE_FILE_MAX_LABEL}.`);
+      setFileCheckError(`Die Datei ist größer als ${SOURCE_FILE_MAX_LABEL}.`);
       return;
     }
 
     if (!isAllowedSourceMimeType(file.type)) {
-      setFileCheckError("Nur PDF- und Textdateien werden unterstuetzt.");
+      setFileCheckError("Nur PDF- und Textdateien werden unterstützt.");
       return;
     }
 
@@ -105,7 +105,7 @@ export function AddSourceForm({ notebookId }: { notebookId: string }) {
           disabled={filePending || fileCheckError !== null}
           className={buttonClass}
         >
-          {filePending ? "Wird hochgeladen ..." : "Datei hinzufuegen"}
+          {filePending ? "Wird hochgeladen ..." : "Datei hinzufügen"}
         </button>
         {fileError ? (
           <ErrorText id="source-file-error" message={fileError} />
@@ -118,7 +118,7 @@ export function AddSourceForm({ notebookId }: { notebookId: string }) {
           htmlFor="source-url"
           className="block text-xs font-medium text-neutral-500 dark:text-neutral-400"
         >
-          URL hinzufuegen
+          URL hinzufügen
         </label>
         {/* Der key erzwingt ein Neumounten, damit die abgelehnte Adresse
             nach dem Formular-Reset wieder im Feld steht. */}
@@ -136,7 +136,7 @@ export function AddSourceForm({ notebookId }: { notebookId: string }) {
           className={inputClass}
         />
         <button type="submit" disabled={urlPending} className={buttonClass}>
-          {urlPending ? "Wird hinzugefuegt ..." : "URL hinzufuegen"}
+          {urlPending ? "Wird hinzugefügt ..." : "URL hinzufügen"}
         </button>
         {urlState.error ? (
           <ErrorText id="source-url-error" message={urlState.error} />

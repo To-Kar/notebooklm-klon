@@ -25,7 +25,7 @@ export default function GlobalError({
       <div className="rounded-xl border border-red-200 px-6 py-12 text-center dark:border-red-900/60">
         <h1 className="text-lg font-semibold">Da ist etwas schiefgelaufen</h1>
         <p className="mx-auto mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
-          Die Seite konnte nicht geladen werden. Pruef die Supabase-Verbindung
+          Die Seite konnte nicht geladen werden. Prüf die Supabase-Verbindung
           und versuch es noch einmal.
         </p>
         <button

@@ -211,7 +211,7 @@ export default async function NotebookPage({
 
           {sources.length === 0 ? (
             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-              Noch keine Quellen. Lad eine Datei hoch oder fueg eine URL hinzu.
+              Noch keine Quellen. Lad eine Datei hoch oder füg eine URL hinzu.
             </p>
           ) : (
             <ul className="space-y-2">

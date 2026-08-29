@@ -37,7 +37,7 @@ export async function createNotebookAction(
 
   if (title.length > NOTEBOOK_TITLE_MAX_LENGTH) {
     return {
-      error: `Der Titel darf hoechstens ${NOTEBOOK_TITLE_MAX_LENGTH} Zeichen lang sein.`,
+      error: `Der Titel darf höchstens ${NOTEBOOK_TITLE_MAX_LENGTH} Zeichen lang sein.`,
     };
   }
 

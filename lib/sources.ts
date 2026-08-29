@@ -144,7 +144,7 @@ export async function deleteSource(id: string): Promise<void> {
   const { error } = await supabase.from("sources").delete().eq("id", id);
 
   if (error) {
-    throw new Error(`Quelle konnte nicht geloescht werden: ${error.message}`);
+    throw new Error(`Quelle konnte nicht gelöscht werden: ${error.message}`);
   }
 }
 
@@ -361,7 +361,7 @@ export async function createFileSource(
   }
 
   if (!isAllowedSourceMimeType(file.type)) {
-    throw new Error(`Dateityp nicht unterstuetzt: ${file.type || "unbekannt"}`);
+    throw new Error(`Dateityp nicht unterstützt: ${file.type || "unbekannt"}`);
   }
 
   const sourceType = SOURCE_FILE_TYPES[file.type];

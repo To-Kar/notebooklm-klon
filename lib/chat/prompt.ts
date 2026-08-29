@@ -36,7 +36,7 @@ export const MIN_TOP_SIMILARITY = 0.55;
  */
 export const NO_CONTEXT_ANSWER =
   "Dazu finde ich nichts in deinen Quellen. Formulier die Frage anders " +
-  "oder fueg eine passende Quelle hinzu.";
+  "oder füg eine passende Quelle hinzu.";
 
 /**
  * Antwort, wenn keine Quelle ausgewaehlt ist.
@@ -45,7 +45,7 @@ export const NO_CONTEXT_ANSWER =
  * deinen Quellen" waere hier irrefuehrend - es wurde ja gar nicht gesucht.
  */
 export const NO_SELECTION_ANSWER =
-  "Es ist keine Quelle ausgewaehlt. Waehl links mindestens eine aus, " +
+  "Es ist keine Quelle ausgewählt. Wähl links mindestens eine aus, " +
   "damit ich darin suchen kann.";
 
 export const SYSTEM_PROMPT = `Du bist ein Rechercheassistent, der Fragen ausschliesslich anhand der unten stehenden Auszuege beantwortet.

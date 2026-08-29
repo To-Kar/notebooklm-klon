@@ -33,14 +33,14 @@ export async function buildMindmap(
 
     if (sourceIds.length === 0) {
       throw new Error(
-        "Es ist keine verarbeitete Quelle ausgewaehlt, aus der sich eine Karte zeichnen liesse.",
+        "Es ist keine verarbeitete Quelle ausgewählt, aus der sich eine Karte zeichnen ließe.",
       );
     }
 
     const chunks = await collectChunks(notebookId, sourceIds);
 
     if (chunks.length === 0) {
-      throw new Error("Ohne Abschnitte laesst sich keine Karte zeichnen.");
+      throw new Error("Ohne Abschnitte lässt sich keine Karte zeichnen.");
     }
 
     const map = await generateMindmap(chunks);
@@ -49,7 +49,7 @@ export async function buildMindmap(
 
     return { outcome: "ready" };
   } catch (error) {
-    console.error(`Karte fuer Notebook ${notebookId} fehlgeschlagen:`, error);
+    console.error(`Karte für Notebook ${notebookId} fehlgeschlagen:`, error);
 
     const istVerstaendlich =
       error instanceof Error &&

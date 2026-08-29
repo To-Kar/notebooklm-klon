@@ -194,7 +194,7 @@ export async function extractSourceSegments(
       segments = [{ text: response.body }];
     } else {
       throw new ExtractionError(
-        `Inhaltstyp wird nicht unterstuetzt: ${response.contentType || "unbekannt"}`,
+        `Inhaltstyp wird nicht unterstützt: ${response.contentType || "unbekannt"}`,
       );
     }
   } else {

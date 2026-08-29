@@ -105,6 +105,6 @@ export async function clearMessages(notebookId: string): Promise<void> {
     .eq("notebook_id", notebookId);
 
   if (error) {
-    throw new Error(`Verlauf konnte nicht geloescht werden: ${error.message}`);
+    throw new Error(`Verlauf konnte nicht gelöscht werden: ${error.message}`);
   }
 }

@@ -76,8 +76,8 @@ export async function deleteNoteAction(noteId: string): Promise<NoteResult> {
       revalidatePath(`/notebooks/${notebookId}`);
     }
   } catch (error) {
-    console.error("Notiz loeschen fehlgeschlagen:", error);
-    return { error: "Die Notiz konnte nicht geloescht werden." };
+    console.error("Notiz löschen fehlgeschlagen:", error);
+    return { error: "Die Notiz konnte nicht gelöscht werden." };
   }
 
   return { error: null };

@@ -122,7 +122,7 @@ async function embedBatch(
 
   if (embeddings.length !== texts.length) {
     throw new Error(
-      `Anbieter lieferte ${embeddings.length} Embeddings fuer ${texts.length} Texte.`,
+      `Anbieter lieferte ${embeddings.length} Embeddings für ${texts.length} Texte.`,
     );
   }
 

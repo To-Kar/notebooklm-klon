@@ -28,8 +28,8 @@ export async function clearConversationAction(
   try {
     await clearMessages(notebook.id);
   } catch (error) {
-    console.error("Gespraech leeren fehlgeschlagen:", error);
-    return { error: "Das Gespraech konnte nicht geleert werden." };
+    console.error("Gespräch leeren fehlgeschlagen:", error);
+    return { error: "Das Gespräch konnte nicht geleert werden." };
   }
 
   revalidatePath(`/notebooks/${notebook.id}`);

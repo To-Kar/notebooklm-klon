@@ -88,7 +88,7 @@ export function AudioPanel({
       <div className="space-y-1">
         <h2 className="text-sm font-semibold">Gesprochene Zusammenfassung</h2>
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          Zwei Stimmen sprechen ueber die ausgewaehlten Quellen, rund eine halbe
+          Zwei Stimmen sprechen über die ausgewählten Quellen, rund eine halbe
           Minute.
         </p>
       </div>
@@ -105,7 +105,7 @@ export function AudioPanel({
 
         {!canGenerate ? (
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
-            Waehl zuerst eine verarbeitete Quelle aus.
+            Wähl zuerst eine verarbeitete Quelle aus.
           </span>
         ) : null}
 

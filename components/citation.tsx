@@ -130,7 +130,7 @@ export function CitationDialog({
       .catch((fehler) => {
         if (verworfen) return;
         console.error("Link zur Quelle fehlgeschlagen:", fehler);
-        setLinkFehler("Die Quelle konnte nicht geoeffnet werden.");
+        setLinkFehler("Die Quelle konnte nicht geöffnet werden.");
       });
 
     return () => {
@@ -163,17 +163,17 @@ export function CitationDialog({
             {` · Beleg [${source.marker}]`}
             {source.similarity === null
               ? ""
-              : ` · Aehnlichkeit ${source.similarity.toFixed(2)}`}
+              : ` · Ähnlichkeit ${source.similarity.toFixed(2)}`}
           </p>
         </div>
 
         <button
           type="button"
           onClick={schliessen}
-          aria-label="Belegstelle schliessen"
+          aria-label="Belegstelle schließen"
           className="shrink-0 rounded-lg px-2 py-1 text-sm text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
         >
-          Schliessen
+          Schließen
         </button>
       </div>
 
@@ -196,10 +196,10 @@ export function CitationDialog({
             className="text-xs font-medium underline underline-offset-2 transition hover:text-neutral-500 dark:hover:text-neutral-400"
           >
             {source.sourceType === "url"
-              ? "Seite im Original oeffnen"
+              ? "Seite im Original öffnen"
               : source.page === null
-                ? "Datei oeffnen"
-                : `Datei auf Seite ${source.page} oeffnen`}
+                ? "Datei öffnen"
+                : `Datei auf Seite ${source.page} öffnen`}
           </a>
         ) : (
           <p className="text-xs text-neutral-500 dark:text-neutral-400">

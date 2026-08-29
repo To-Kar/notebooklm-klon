@@ -6,7 +6,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "NotebookLM Klon",
   description:
-    "Quellen-gestuetzter Recherche-Assistent mit RAG und klickbaren Zitaten.",
+    "Quellen-gestützter Recherche-Assistent mit RAG und klickbaren Zitaten.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

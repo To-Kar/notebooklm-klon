@@ -46,7 +46,7 @@ export async function generateAudioOverview(
 
     if (quellen.length === 0) {
       throw new Error(
-        "Es ist keine verarbeitete Quelle ausgewaehlt, ueber die gesprochen werden koennte.",
+        "Es ist keine verarbeitete Quelle ausgewählt, über die gesprochen werden könnte.",
       );
     }
 
@@ -63,7 +63,7 @@ export async function generateAudioOverview(
 
     return { outcome: "ready", seconds: sekunden };
   } catch (error) {
-    console.error(`Audio fuer Notebook ${notebookId} fehlgeschlagen:`, error);
+    console.error(`Audio für Notebook ${notebookId} fehlgeschlagen:`, error);
 
     // Rate-Limits und die eigenen Abbruchgruende tragen eine Meldung, die
     // dem Nutzer weiterhilft. Alles andere bleibt allgemein.

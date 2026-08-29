@@ -19,8 +19,8 @@ export function DeleteSourceButton({ sourceId }: { sourceId: string }) {
   return (
     <ConfirmButton
       size="klein"
-      label="Loeschen"
-      question="Quelle loeschen?"
+      label="Löschen"
+      question="Quelle löschen?"
       action={() => deleteSourceAction(sourceId)}
     />
   );
@@ -38,14 +38,14 @@ export function DeleteNotebookButton({
   // Beim Namen nennen, was verschwindet. "Bist du sicher?" hilft niemandem.
   const question =
     sourceCount === 0
-      ? "Notebook loeschen?"
+      ? "Notebook löschen?"
       : sourceCount === 1
-        ? "Notebook mit 1 Quelle und allen Abschnitten loeschen?"
-        : `Notebook mit ${sourceCount} Quellen und allen Abschnitten loeschen?`;
+        ? "Notebook mit 1 Quelle und allen Abschnitten löschen?"
+        : `Notebook mit ${sourceCount} Quellen und allen Abschnitten löschen?`;
 
   return (
     <ConfirmButton
-      label="Notebook loeschen"
+      label="Notebook löschen"
       question={question}
       action={() => deleteNotebookAction(notebookId)}
       onDone={() => router.push("/")}

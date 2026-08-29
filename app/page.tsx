@@ -18,7 +18,7 @@ export default async function Home() {
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">Deine Notebooks</h1>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          Ein Notebook buendelt deine Quellen und den Chat dazu.
+          Ein Notebook bündelt deine Quellen und den Chat dazu.
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export default async function Home() {
             <p className="text-sm font-medium">Noch keine Notebooks</p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-neutral-500 dark:text-neutral-400">
               Leg oben dein erstes Notebook an. Danach kannst du Quellen
-              hinzufuegen und mit ihnen chatten.
+              hinzufügen und mit ihnen chatten.
             </p>
           </div>
         ) : (
