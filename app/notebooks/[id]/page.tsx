@@ -16,10 +16,12 @@ import {
   SelectAllSources,
   SourceCheckbox,
 } from "@/components/source-selection";
+import { NotebookTitle, SourceTitle } from "@/components/rename-control";
 import { SourceStatusBadge } from "@/components/source-status";
 import { SourceSummary } from "@/components/source-summary";
 import { formatNotebookDate, getNotebook } from "@/lib/notebooks";
 import { SOURCE_TYPE_LABELS } from "@/lib/source-limits";
+import { withCurrentTitles } from "@/lib/chat/citations";
 import { listMessages } from "@/lib/messages";
 import { getAudioOverview } from "@/lib/audio/store";
 import { getMindmap } from "@/lib/mindmap/store";
@@ -54,9 +56,7 @@ function SourceItem({ source }: { source: Source }) {
       />
 
       <div className="min-w-0 flex-1">
-      <p className="truncate text-sm font-medium" title={source.title}>
-        {source.title}
-      </p>
+      <SourceTitle sourceId={source.id} title={source.title} />
       <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs">
         <span className="text-neutral-500 dark:text-neutral-400">
           {SOURCE_TYPE_LABELS[source.type]}
@@ -119,9 +119,23 @@ export default async function NotebookPage({
     canGenerate: blocker === null,
   };
 
+  /**
+   * Der Stand der Titel, gegen den alle gespeicherten Belege laufen.
+   *
+   * An einer Stelle gebildet und dreifach angewendet: Verlauf, Notizen und
+   * Karte tragen dieselben Belege, und ein umbenannter Titel muss ueberall
+   * derselbe sein.
+   */
+  const titel = new Map(sources.map((source) => [source.id, source.title]));
+
   const mindmap: MindmapState = {
     status: mindmapRow?.status ?? null,
-    data: mindmapRow?.data ?? null,
+    data: mindmapRow?.data
+      ? {
+          ...mindmapRow.data,
+          sources: withCurrentTitles(mindmapRow.data.sources, titel),
+        }
+      : null,
     error: mindmapRow?.error_message ?? null,
     canGenerate: blocker === null,
   };
@@ -129,11 +143,19 @@ export default async function NotebookPage({
   const initialEntries: ChatEntry[] = messages.map((message) => ({
     role: message.role,
     content: message.content,
-    sources: message.citations,
+    sources: withCurrentTitles(message.citations, titel),
+  }));
+
+  const notizen = notes.map((note) => ({
+    ...note,
+    citations: withCurrentTitles(note.citations, titel),
   }));
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-10">
+    // max-w-6xl statt 5xl: die Themenlandkarte ist 674 Bildpunkte breit und
+    // passte in die schmalere Spalte nicht hinein. Die Uebersichtsseite bleibt
+    // bei 5xl - dort steht nur eine Liste.
+    <main className="mx-auto w-full max-w-6xl px-6 py-10">
       <Link
         href="/"
         className="text-sm text-neutral-500 transition hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
@@ -142,10 +164,8 @@ export default async function NotebookPage({
       </Link>
 
       <header className="mt-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {notebook.title}
-          </h1>
+        <div className="min-w-0 flex-1">
+          <NotebookTitle notebookId={notebook.id} title={notebook.title} />
           <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
             Erstellt am {formatNotebookDate(notebook.created_at)}
           </p>
@@ -188,7 +208,7 @@ export default async function NotebookPage({
           notebookId={notebook.id}
           blocker={blocker}
           initialEntries={initialEntries}
-          notes={notes}
+          notes={notizen}
           audio={audio}
           mindmap={mindmap}
         />

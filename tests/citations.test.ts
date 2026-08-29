@@ -5,6 +5,7 @@ import {
   describeSource,
   splitIntoSegments,
   usedSources,
+  withCurrentTitles,
 } from "@/lib/chat/citations";
 
 /**
@@ -137,5 +138,66 @@ describe("describeSource", () => {
     expect(
       describeSource(quelle(1, { title: "beispiel.de", sourceType: "url" })),
     ).toBe("beispiel.de (URL)");
+  });
+});
+
+describe("withCurrentTitles", () => {
+  it("zieht einen umbenannten Titel nach", () => {
+    const gespeichert = [quelle(1, { sourceId: "a", title: "Alter Name" })];
+    const [ergebnis] = withCurrentTitles(
+      gespeichert,
+      new Map([["a", "Neuer Name"]]),
+    );
+
+    expect(ergebnis.title).toBe("Neuer Name");
+  });
+
+  it("laesst alles ausser dem Titel unangetastet", () => {
+    // Der woertliche Abschnitt ist die Momentaufnahme, auf die sich die
+    // Antwort berufen hat. Wer den mitzieht, faelscht den Beleg.
+    const gespeichert = quelle(1, {
+      sourceId: "a",
+      title: "Alt",
+      content: "Der Wortlaut von damals",
+      page: 7,
+      similarity: 0.61,
+    });
+
+    const [ergebnis] = withCurrentTitles(
+      [gespeichert],
+      new Map([["a", "Neu"]]),
+    );
+
+    expect(ergebnis).toEqual({ ...gespeichert, title: "Neu" });
+  });
+
+  it("behaelt den gespeicherten Titel, wenn die Quelle geloescht wurde", () => {
+    const gespeichert = [quelle(1, { sourceId: "weg", title: "Alter Name" })];
+    const [ergebnis] = withCurrentTitles(gespeichert, new Map());
+
+    expect(ergebnis.title).toBe("Alter Name");
+  });
+
+  it("ordnet jedem Beleg den Titel seiner eigenen Quelle zu", () => {
+    const ergebnis = withCurrentTitles(
+      [
+        quelle(1, { sourceId: "a", title: "A alt" }),
+        quelle(2, { sourceId: "b", title: "B alt" }),
+        quelle(3, { sourceId: "a", title: "A alt" }),
+      ],
+      new Map([
+        ["a", "A neu"],
+        ["b", "B neu"],
+      ]),
+    );
+
+    expect(ergebnis.map((s) => s.title)).toEqual(["A neu", "B neu", "A neu"]);
+  });
+
+  it("aendert nichts an der Reihenfolge und der Anzahl", () => {
+    const gespeichert = [quelle(1), quelle(2), quelle(3)];
+    const ergebnis = withCurrentTitles(gespeichert, new Map());
+
+    expect(ergebnis.map((s) => s.marker)).toEqual([1, 2, 3]);
   });
 });

@@ -1,4 +1,5 @@
 import { NOTEBOOK_TITLE_MAX_LENGTH } from "@/lib/notebook-limits";
+import { checkTitle } from "@/lib/title";
 import { listSourceFilePaths, removeSourceFiles } from "@/lib/sources";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -104,28 +105,45 @@ export async function deleteNotebook(id: string): Promise<void> {
   }
 }
 
+/** Benennt ein Notebook um. Wirft bei ungueltiger Eingabe oder DB-Fehler. */
+export async function renameNotebook(
+  id: string,
+  title: string,
+): Promise<void> {
+  const geprueft = checkTitle(title, NOTEBOOK_TITLE_MAX_LENGTH);
+
+  if (!geprueft.ok) {
+    throw new Error(geprueft.reason);
+  }
+
+  const supabase = createAdminClient();
+
+  const { error } = await supabase
+    .from("notebooks")
+    .update({ title: geprueft.title })
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Notebook konnte nicht umbenannt werden: ${error.message}`);
+  }
+}
+
 /**
  * Legt ein Notebook an. Der Titel wird getrimmt und darf nicht leer sein.
  * Wirft bei ungueltiger Eingabe oder DB-Fehler.
  */
 export async function createNotebook(title: string): Promise<Notebook> {
-  const trimmedTitle = title.trim();
+  const geprueft = checkTitle(title, NOTEBOOK_TITLE_MAX_LENGTH);
 
-  if (trimmedTitle.length === 0) {
-    throw new Error("Der Titel darf nicht leer sein.");
-  }
-
-  if (trimmedTitle.length > NOTEBOOK_TITLE_MAX_LENGTH) {
-    throw new Error(
-      `Der Titel darf hoechstens ${NOTEBOOK_TITLE_MAX_LENGTH} Zeichen lang sein.`,
-    );
+  if (!geprueft.ok) {
+    throw new Error(geprueft.reason);
   }
 
   const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("notebooks")
-    .insert({ title: trimmedTitle })
+    .insert({ title: geprueft.title })
     .select(NOTEBOOK_COLUMNS)
     .single();
 

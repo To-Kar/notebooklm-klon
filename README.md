@@ -7,7 +7,7 @@ stammt.**
 
 **Live: https://notebooklm-klon-to-kar.vercel.app**
 
-![Chat mit aufgeklappter Belegstelle](docs/screenshot-chat.png)
+![Chat mit Belegen: die Antwort verweist mit Nummern auf die Abschnitte, aus denen sie stammt](docs/screenshot-chat.png)
 
 > Bewerbungsaufgabe. Der Fokus liegt auf dem Kern des Produkts und auf
 > nachvollziehbaren Entscheidungen, nicht auf Funktionsfuelle.
@@ -38,12 +38,18 @@ Konkret heisst das hier:
 Der letzte Punkt ist der wichtigste. Ein Assistent, der bei fehlendem Wissen
 raet, ist schlimmer als keiner.
 
+![Belegdialog: woertlicher Abschnitt, Quelle, Beleg-Nummer und Link ins Original](docs/screenshot-beleg.png)
+
+Derselbe Dialog oeffnet sich ueberall, wo etwas belegt ist: im Chat, unter einer
+gespeicherten Notiz und in der Themenlandkarte. Eine Belegstelle sieht immer
+gleich aus, egal woher man kommt.
+
 ## Funktionsumfang
 
 | Bereich | Was |
 | --- | --- |
-| Notebooks | anlegen, auflisten, oeffnen, loeschen |
-| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwaehlen, loeschen |
+| Notebooks | anlegen, auflisten, oeffnen, umbenennen, loeschen |
+| Quellen | PDF- und Textupload, URL-Eingabe, Statusanzeige, an- und abwaehlen, umbenennen, loeschen |
 | Beschreibung | Kurzfassung und Kernthemen je Quelle, direkt nach der Ingestion |
 | Ingestion | Parsen, Chunking mit Herkunftsangabe, Embedding, Statuspflege |
 | Chat | Retrieval, gestreamte Antwort, Folgefragen mit aufgeloesten Rueckbezuegen |
@@ -52,6 +58,19 @@ raet, ist schlimmer als keiner.
 | Notizen | Antworten sichern oder selbst schreiben; gesicherte Antworten behalten ihre Belege |
 | Audio | gesprochene Zusammenfassung der ausgewaehlten Quellen, zwei Stimmen, rund 30 Sekunden |
 | Karte | Themenlandkarte der ausgewaehlten Quellen; jeder Knoten belegt sich und fuehrt in denselben Belegdialog |
+
+### Themenlandkarte
+
+Was in den Quellen steht, nebeneinander statt hintereinander. Jeder Knoten
+traegt die Nummern der Abschnitte, aus denen er stammt, und ein Klick darauf
+oeffnet denselben Belegdialog wie im Chat.
+
+![Themenlandkarte mit Belegnummern an jedem Knoten](docs/screenshot-karte.png)
+
+Der Baum kommt als strukturierte Ausgabe vom Modell, die Anordnung dagegen aus
+einer reinen Funktion in `lib/mindmap/layout.ts`: Baum rein, Koordinaten raus.
+Damit laesst sich pruefen, was man bei Grafikcode sonst nur sieht — dass sich
+keine zwei Kaesten ueberlappen und keiner aus der Flaeche faellt.
 
 ## Stack
 
@@ -243,7 +262,7 @@ Erfolge auflistet, sagt wenig darueber, wie sorgfaeltig geprueft wurde.
   ausgelegt, damit sie in die Laufzeitgrenzen einer Serverless-Function passt.
 - **Video-Overview.** Audio und Themenlandkarte stehen, Video nicht: der Kern
   hat Vorrang, und bewegtes Bild bringt hier nichts, was die Karte nicht zeigt.
-- **Mehrere Gespraeche je Notebook**, Umbenennen, Export.
+- **Mehrere Gespraeche je Notebook** und Export.
 
 ## Bekannte Grenzen
 
